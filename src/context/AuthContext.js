@@ -14,14 +14,21 @@ export const AuthProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    // Suscribirse a cambios de autenticación de Firebase
+    console.log('AuthContext: Iniciando observador de Firebase...');
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('AuthContext: Estado de Firebase cambiado. Usuario:', user ? 'Logueado' : 'No logueado');
       let userToken = null;
-      if (user) {
-        userToken = await user.getIdToken();
-        await SecureStore.setItemAsync('userToken', userToken);
-      } else {
-        await SecureStore.deleteItemAsync('userToken');
+      try {
+        if (user) {
+          userToken = await user.getIdToken();
+          await SecureStore.setItemAsync('userToken', userToken);
+          console.log('AuthContext: Token guardado correctamente.');
+        } else {
+          await SecureStore.deleteItemAsync('userToken');
+          console.log('AuthContext: Token eliminado (sin sesión).');
+        }
+      } catch (e) {
+        console.error('AuthContext: Error en el proceso de token:', e);
       }
       setState(s => ({ ...s, user, userToken, isLoading: false }));
     });
