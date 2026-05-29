@@ -3,18 +3,10 @@ import { View, ActivityIndicator, Text, StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthContext } from '../context/AuthContext';
-
-import LoginScreen from '../screens/LoginScreen';
+import CatalogScreen from '../screens/CatalogScreen';
+import LoginScreen from "../screens/LoginScreen";
 
 const Stack = createNativeStackNavigator();
-
-function HomeScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Bienvenido a Boutique Estefany</Text>
-    </View>
-  );
-}
 
 export default function AppNavigator() {
   const { isLoading, userToken } = useContext(AuthContext);
@@ -42,8 +34,8 @@ export default function AppNavigator() {
           />
         ) : (
           <Stack.Screen 
-            name="Home" 
-            component={HomeScreen} 
+            name="Catalog" 
+            component={CatalogScreen} 
           />
         )}
       </Stack.Navigator>
