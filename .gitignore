@@ -39,6 +39,8 @@ yarn-error.*
 .claude/
 
 # local env files
+.env
+.env.*
 .env*.local
 
 # typescript
