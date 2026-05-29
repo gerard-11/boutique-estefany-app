@@ -11,24 +11,17 @@ import {
   ActivityIndicator,
   RefreshControl
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import api from '../services/api';
+import { useProducts } from '../hooks/useProducts';
 
 export default function CatalogScreen() {
-  // Petición real a NestJS
+  // Consumo desde la capa de Hooks (Arquitectura Empresarial)
   const { 
     data: products, 
     isLoading, 
     isError, 
     refetch,
     isRefetching 
-  } = useQuery({
-    queryKey: ['products'],
-    queryFn: async () => {
-      const response = await api.get('/products');
-      return response.data;
-    },
-  });
+  } = useProducts();
 
   const renderItem = ({ item }) => (
     <TouchableOpacity style={styles.card} activeOpacity={0.7}>
