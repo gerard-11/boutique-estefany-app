@@ -30,6 +30,14 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# IDEs and Editors
+.idea/
+.vscode/
+
+# AI Tools
+.ai/
+.claude/
+
 # local env files
 .env*.local
 
