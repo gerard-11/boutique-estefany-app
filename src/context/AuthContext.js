@@ -2,6 +2,8 @@ import React, { createContext, useState, useEffect, useMemo } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { auth } from '../services/firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
+import api from '../services/api';
+import { getPublicUser } from '../services/userService';
 
 export const AuthContext = createContext();
 
@@ -10,7 +12,9 @@ export const AuthProvider = ({ children }) => {
     isLoading: true,
     isSignout: false,
     userToken: null,
-    user: null,
+    user: null, 
+    profile: null, 
+    publicUser: null, // Guardaremos aquí al "Público General"
   });
 
   useEffect(() => {
@@ -18,19 +22,46 @@ export const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log('AuthContext: Estado de Firebase cambiado. Usuario:', user ? 'Logueado' : 'No logueado');
       let userToken = null;
+      let profile = null;
+      let publicUser = null;
+
       try {
         if (user) {
           userToken = await user.getIdToken();
           await SecureStore.setItemAsync('userToken', userToken);
-          console.log('AuthContext: Token guardado correctamente.');
+          
+          // HACK TEMPORAL PARA PREVISUALIZACIÓN:
+          // Comentamos la llamada real y forzamos el perfil
+          /*
+          const response = await api.get('/auth/me');
+          profile = response.data;
+          */
+          profile = {
+            id: 'dev-admin-id',
+            email: user.email,
+            role: 'ADMIN',
+            name: 'Administrador Dev'
+          };
+
+          // Simulamos también al público general para que no falle el estado
+          publicUser = { id: 'public-gen-uuid', name: 'Público General' };
+          
+          console.log('AuthContext: MODO PREVISUALIZACIÓN ADMIN ACTIVADO');
         } else {
           await SecureStore.deleteItemAsync('userToken');
-          console.log('AuthContext: Token eliminado (sin sesión).');
         }
       } catch (e) {
-        console.error('AuthContext: Error en el proceso de token:', e);
+        console.error('AuthContext: Error en hidratación o búsqueda de Público:', e);
       }
-      setState(s => ({ ...s, user, userToken, isLoading: false }));
+      
+      setState(s => ({ 
+        ...s, 
+        user, 
+        userToken, 
+        profile, 
+        publicUser,
+        isLoading: false 
+      }));
     });
 
     return unsubscribe;
@@ -41,7 +72,13 @@ export const AuthProvider = ({ children }) => {
       signIn: async (token) => {
         // El token viene de Google o Firebase Login
         await SecureStore.setItemAsync('userToken', token);
-        setState(s => ({ ...s, userToken: token, isSignout: false }));
+        // HACK: También inyectamos el perfil de admin aquí para la previsualización
+        const dummyProfile = {
+          id: 'dev-admin-id',
+          role: 'ADMIN',
+          name: 'Administrador Dev'
+        };
+        setState(s => ({ ...s, userToken: token, profile: dummyProfile, isSignout: false }));
       },
       signOut: async () => {
         await auth.signOut();
