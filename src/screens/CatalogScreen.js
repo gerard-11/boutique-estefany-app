@@ -1,6 +1,5 @@
 import React from 'react';
 import { 
-  StyleSheet, 
   View, 
   Text, 
   FlatList, 
@@ -12,6 +11,7 @@ import {
   RefreshControl
 } from 'react-native';
 import { useProducts } from '../hooks/useProducts';
+import { styles } from './CatalogScreen.styles';
 
 export default function CatalogScreen() {
   // Consumo desde la capa de Hooks (Arquitectura Empresarial)
@@ -90,88 +90,3 @@ export default function CatalogScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f2f2f2',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#d63384',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#6c757d',
-    marginTop: 4,
-  },
-  list: {
-    padding: 10,
-  },
-  card: {
-    flex: 1,
-    margin: 8,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  image: {
-    width: '100%',
-    height: 180,
-    backgroundColor: '#f8f9fa',
-  },
-  info: {
-    padding: 10,
-  },
-  name: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-  },
-  price: {
-    fontSize: 16,
-    color: '#d63384',
-    fontWeight: '700',
-    marginTop: 4,
-  },
-  loadingText: {
-    marginTop: 10,
-    color: '#666',
-  },
-  errorText: {
-    textAlign: 'center',
-    color: '#dc3545',
-    marginBottom: 20,
-  },
-  retryButton: {
-    backgroundColor: '#d63384',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  emptyText: {
-    color: '#999',
-    textAlign: 'center',
-  }
-});

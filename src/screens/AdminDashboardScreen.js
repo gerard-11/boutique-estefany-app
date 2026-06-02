@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
-  StyleSheet, 
   View, 
   Text, 
   ScrollView, 
   SafeAreaView, 
   ActivityIndicator,
-  RefreshControl 
+  RefreshControl,
+  Alert 
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDashboard } from '../hooks/useDashboard';
 import ScannerFAB from '../components/ScannerFAB';
+import ScannerModal from '../components/ScannerModal';
+import { styles } from './AdminDashboardScreen.styles';
 
 const MetricCard = ({ title, value, icon, color, subtitle }) => (
   <View style={styles.card}>
@@ -27,6 +29,16 @@ const MetricCard = ({ title, value, icon, color, subtitle }) => (
 
 export default function AdminDashboardScreen() {
   const { data, isLoading, isError, refetch, isRefetching } = useDashboard();
+  const [scannerVisible, setScannerVisible] = useState(false);
+
+  const handleScan = ({ type, data }) => {
+    setScannerVisible(false);
+    Alert.alert(
+      'Producto Escaneado',
+      `Tipo: ${type}\nCódigo: ${data}\n\nAquí abriremos el menú circular de acciones pronto.`,
+      [{ text: 'OK' }]
+    );
+  };
 
   if (isLoading) {
     return (
@@ -90,79 +102,15 @@ export default function AdminDashboardScreen() {
         </View>
       </ScrollView>
 
-      {/* Botón Flotante Global para el Admin */}
-      <ScannerFAB onPress={() => console.log('Abrir Escáner...')} />
+      <ScannerFAB onPress={() => setScannerVisible(true)} />
+
+      <ScannerModal
+        visible={scannerVisible} 
+        onClose={() => setScannerVisible(false)}
+        onScan={handleScan}
+      />
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollContent: {
-    padding: 20,
-  },
-  header: {
-    marginBottom: 25,
-  },
-  welcome: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  date: {
-    fontSize: 16,
-    color: '#6c757d',
-    textTransform: 'capitalize',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  card: {
-    width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 15,
-    marginBottom: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  cardTitle: {
-    fontSize: 14,
-    color: '#6c757d',
-    fontWeight: '600',
-  },
-  cardValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginVertical: 4,
-  },
-  cardSubtitle: {
-    fontSize: 11,
-    color: '#adb5bd',
-  },
-  loadingText: {
-    marginTop: 10,
-    color: '#666',
-  }
-});
+
