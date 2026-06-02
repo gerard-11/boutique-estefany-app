@@ -37,7 +37,6 @@ export default function LoginScreen() {
   const googleIosClientId = getConfiguredClientId(GOOGLE_IOS_CLIENT_ID);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: googleWebClientId,
     webClientId: googleWebClientId,
     androidClientId: googleAndroidClientId,
     iosClientId: googleIosClientId,
