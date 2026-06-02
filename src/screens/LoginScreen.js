@@ -1,6 +1,5 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { 
-  StyleSheet, 
   View, 
   Text, 
   TouchableOpacity, 
@@ -8,25 +7,80 @@ import {
   ActivityIndicator,
   Alert 
 } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+import { 
+  GoogleAuthProvider, 
+  signInWithCredential 
+} from 'firebase/auth';
 import { AuthContext } from '../context/AuthContext';
-// Importaremos la lógica de Google aquí más adelante cuando configuremos el ClientID
-// import * as Google from 'expo-auth-session/providers/google';
+import { auth } from '../services/firebaseConfig';
+import { styles } from './LoginScreen.styles';
+
+WebBrowser.maybeCompleteAuthSession();
+
+const getConfiguredClientId = (value) => {
+  if (!value || value.startsWith('TU_')) return undefined;
+  return value;
+};
 
 export default function LoginScreen() {
-  const { signIn } = useContext(AuthContext);
+  const { 
+    GOOGLE_WEB_CLIENT_ID,
+    GOOGLE_ANDROID_CLIENT_ID,
+    GOOGLE_IOS_CLIENT_ID,
+  } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
 
+  const googleWebClientId = getConfiguredClientId(GOOGLE_WEB_CLIENT_ID);
+  const googleAndroidClientId = getConfiguredClientId(GOOGLE_ANDROID_CLIENT_ID);
+  const googleIosClientId = getConfiguredClientId(GOOGLE_IOS_CLIENT_ID);
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: googleWebClientId,
+    webClientId: googleWebClientId,
+    androidClientId: googleAndroidClientId,
+    iosClientId: googleIosClientId,
+    scopes: ['profile', 'email'],
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+
+      if (!id_token) {
+        console.error('Google Auth Error: No se recibió id_token', response);
+        Alert.alert('Error', 'Google no devolvió un token válido. Revisa el Client ID de esta plataforma.');
+        setLoading(false);
+        return;
+      }
+
+      const credential = GoogleAuthProvider.credential(id_token);
+      
+      setLoading(true);
+      signInWithCredential(auth, credential)
+        .catch(error => {
+          console.error('Firebase Auth Error:', error);
+          Alert.alert('Error', 'No se pudo conectar con Firebase');
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
+  }, [response]);
+
   const handleGoogleLogin = async () => {
-    console.log('LoginScreen: Click en botón Google');
+    if (!request) {
+      Alert.alert('Cargando...', 'La configuración de Google aún no está lista. Reintenta en 1 segundo.');
+      return;
+    }
+    
     setLoading(true);
     try {
-      setTimeout(() => {
-        signIn('google-dummy-token');
-        setLoading(false);
-      }, 2000);
+      await promptAsync();
     } catch (error) {
+      console.error('Prompt Error:', error);
       setLoading(false);
-      Alert.alert('Error', 'No se pudo iniciar sesión con Google');
     }
   };
 
@@ -44,9 +98,9 @@ export default function LoginScreen() {
 
         <View style={styles.authContainer}>
           <TouchableOpacity 
-            style={[styles.googleButton, loading && styles.disabledButton]}
+            style={[styles.googleButton, (loading || !request) && styles.disabledButton]}
             onPress={handleGoogleLogin}
-            disabled={loading}
+            disabled={loading || !request}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
@@ -66,67 +120,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff', // Fondo blanco explícito
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 60,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#fce4ec', // Color de respaldo si la imagen falla
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#d63384',
-    marginTop: 20,
-  },
-  tagline: {
-    fontSize: 16,
-    color: '#6c757d',
-    marginTop: 5,
-  },
-  authContainer: {
-    width: '100%',
-    paddingHorizontal: 20,
-  },
-  googleButton: {
-    backgroundColor: '#4285F4',
-    height: 55,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  buttonInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  googleButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  footerText: {
-    marginTop: 20,
-    fontSize: 12,
-    color: '#adb5bd',
-    textAlign: 'center',
-  },
-});
+
+
+
+

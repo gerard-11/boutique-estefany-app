@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "849272336378",
+    "project_id": "boutique-estefany",
+    "storage_bucket": "boutique-estefany.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:849272336378:android:5ed325d659dc4c74943e43",
+        "android_client_info": {
+          "package_name": "com.gerardorito.boutiqueestefany"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "849272336378-oj2d2pne63jc3tnlhplbbaftf2hutlqo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTOGTm6adiPXGEYCQCxaZme7tIjjoo6dw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "849272336378-oj2d2pne63jc3tnlhplbbaftf2hutlqo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,21 +1,26 @@
 {
   "expo": {
     "name": "boutique-estefany-app",
-    "slug": "boutique-estefany-app",
+    "slug": "boutique-estefany",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "boutique-estefany",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gerardorito.boutiqueestefany",
+      "urlSchemes": ["com.googleusercontent.apps.988785588012-nufg93ft1v2eedep5voo21i18mr83kj9"]
     },
     "android": {
+      "package": "com.gerardorito.boutiqueestefany",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -28,6 +33,12 @@
     "plugins": [
       "expo-secure-store",
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1fff1d56-613c-485e-9f75-15d1a592d88b"
+      }
+    },
+    "owner": "gerdevstudios-organization"
   }
 }

@@ -3,9 +3,12 @@ import * as SecureStore from 'expo-secure-store';
 import { auth } from '../services/firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import api from '../services/api';
-import { getPublicUser } from '../services/userService';
 
 export const AuthContext = createContext();
+
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 
 export const AuthProvider = ({ children }) => {
   const [state, setState] = useState({
@@ -14,44 +17,29 @@ export const AuthProvider = ({ children }) => {
     userToken: null,
     user: null, 
     profile: null, 
-    publicUser: null, // Guardaremos aquí al "Público General"
   });
 
   useEffect(() => {
-    console.log('AuthContext: Iniciando observador de Firebase...');
+    console.log('AuthContext: Iniciando observador de Firebase Real...');
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log('AuthContext: Estado de Firebase cambiado. Usuario:', user ? 'Logueado' : 'No logueado');
       let userToken = null;
       let profile = null;
-      let publicUser = null;
 
       try {
         if (user) {
           userToken = await user.getIdToken();
           await SecureStore.setItemAsync('userToken', userToken);
-          
-          // HACK TEMPORAL PARA PREVISUALIZACIÓN:
-          // Comentamos la llamada real y forzamos el perfil
-          /*
+
           const response = await api.get('/auth/me');
           profile = response.data;
-          */
-          profile = {
-            id: 'dev-admin-id',
-            email: user.email,
-            role: 'ADMIN',
-            name: 'Administrador Dev'
-          };
-
-          // Simulamos también al público general para que no falle el estado
-          publicUser = { id: 'public-gen-uuid', name: 'Público General' };
           
-          console.log('AuthContext: MODO PREVISUALIZACIÓN ADMIN ACTIVADO');
+          console.log('AuthContext: Perfil cargado con éxito. Rol:', profile.role);
         } else {
           await SecureStore.deleteItemAsync('userToken');
         }
       } catch (e) {
-        console.error('AuthContext: Error en hidratación o búsqueda de Público:', e);
+        console.error('AuthContext: Error en hidratación real:', e?.response?.data || e.message);
       }
       
       setState(s => ({ 
@@ -59,7 +47,6 @@ export const AuthProvider = ({ children }) => {
         user, 
         userToken, 
         profile, 
-        publicUser,
         isLoading: false 
       }));
     });
@@ -69,29 +56,35 @@ export const AuthProvider = ({ children }) => {
 
   const authContext = useMemo(
     () => ({
-      signIn: async (token) => {
-        // El token viene de Google o Firebase Login
+      signIn: async (firebaseUser) => {
+        // Esta función se llamará después de que el hook de Google complete el login
+        const token = await firebaseUser.getIdToken();
         await SecureStore.setItemAsync('userToken', token);
-        // HACK: También inyectamos el perfil de admin aquí para la previsualización
-        const dummyProfile = {
-          id: 'dev-admin-id',
-          role: 'ADMIN',
-          name: 'Administrador Dev'
-        };
-        setState(s => ({ ...s, userToken: token, profile: dummyProfile, isSignout: false }));
+        setState(s => ({ ...s, userToken: token, user: firebaseUser, isSignout: false }));
       },
       signOut: async () => {
-        await auth.signOut();
-        await SecureStore.deleteItemAsync('userToken');
-        setState(s => ({ ...s, userToken: null, isSignout: true, user: null }));
+        try {
+          await auth.signOut();
+          await SecureStore.deleteItemAsync('userToken');
+          setState(s => ({ ...s, userToken: null, isSignout: true, user: null, profile: null }));
+        } catch (e) {
+          console.error('Error al cerrar sesión:', e);
+        }
       },
     }),
     []
   );
 
   return (
-    <AuthContext.Provider value={{ ...authContext, ...state }}>
+    <AuthContext.Provider value={{ 
+      ...authContext, 
+      ...state, 
+      GOOGLE_WEB_CLIENT_ID,
+      GOOGLE_ANDROID_CLIENT_ID,
+      GOOGLE_IOS_CLIENT_ID,
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
