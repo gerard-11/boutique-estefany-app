@@ -1,43 +1,31 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  SafeAreaView, 
+import {
+  View,
+  Text,
+  ScrollView,
+  SafeAreaView,
   ActivityIndicator,
   RefreshControl,
-  Alert 
+  Alert,
+  TouchableOpacity
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDashboard } from '../hooks/useDashboard';
 import ScannerFAB from '../components/ScannerFAB';
 import ScannerModal from '../components/ScannerModal';
+import MetricCard from '../components/MetricCard';
 import { styles } from './AdminDashboardScreen.styles';
-
-const MetricCard = ({ title, value, icon, color, subtitle }) => (
-  <View style={styles.card}>
-    <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}>
-      <MaterialCommunityIcons name={icon} size={30} color={color} />
-    </View>
-    <View style={styles.cardContent}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={[styles.cardValue, { color }]}>{value}</Text>
-      {subtitle && <Text style={styles.cardSubtitle}>{subtitle}</Text>}
-    </View>
-  </View>
-);
 
 export default function AdminDashboardScreen() {
   const { data, isLoading, isError, refetch, isRefetching } = useDashboard();
   const [scannerVisible, setScannerVisible] = useState(false);
+  const [createProductVisible, setCreateProductVisible] = useState(false);
+  const [scannedBarcode, setScannedBarcode] = useState(null);
 
   const handleScan = ({ type, data }) => {
     setScannerVisible(false);
-    Alert.alert(
-      'Producto Escaneado',
-      `Tipo: ${type}\nCódigo: ${data}\n\nAquí abriremos el menú circular de acciones pronto.`,
-      [{ text: 'OK' }]
-    );
+    setScannedBarcode(data);
+    setCreateProductVisible(true);
   };
 
   if (isLoading) {
@@ -49,25 +37,26 @@ export default function AdminDashboardScreen() {
     );
   }
 
-  // Valores por defecto si la data aún no llega o está vacía
-  const metrics = data || {
-    capitalTotal: 0,
-    dineroVolando: 0,
-    mermasMes: 0,
-    liquidezDia: 0
+  const metrics = {
+    capitalTotal: data?.capitalTotal ?? 0,
+    dineroVolando: data?.dineroVolando ?? 0,
+    mermasMes: data?.mermasMes ?? 0,
+    liquidezDia: data?.liquidezDia ?? 0
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} colors={['#d63384']} />
         }
       >
         <View style={styles.header}>
-          <Text style={styles.welcome}>Panel de Control</Text>
-          <Text style={styles.date}>{new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}</Text>
+          <View>
+            <Text style={styles.welcome}>Panel de Control</Text>
+            <Text style={styles.date}>{new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}</Text>
+          </View>
         </View>
 
         <View style={styles.grid}>
@@ -105,9 +94,8 @@ export default function AdminDashboardScreen() {
       <ScannerFAB onPress={() => setScannerVisible(true)} />
 
       <ScannerModal
-        visible={scannerVisible} 
+        visible={scannerVisible}
         onClose={() => setScannerVisible(false)}
-        onScan={handleScan}
       />
     </SafeAreaView>
   );
