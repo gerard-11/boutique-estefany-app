@@ -62,6 +62,44 @@ export const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.6,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: theme.colors.border || '#ddd',
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.md,
+    height: 50,
+    marginBottom: theme.spacing.md,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text,
+  },
+  adminTitle: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.lg,
+    textAlign: 'center',
+  },
+  adminLoginButton: {
+    backgroundColor: theme.colors.primary,
+    height: 55,
+    borderRadius: theme.borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.light,
+  },
+  adminLoginButtonText: {
+    color: theme.colors.white,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.medium,
+  },
+  adminToggleText: {
+    color: theme.colors.primary,
+    fontSize: theme.typography.fontSize.md,
+    textAlign: 'center',
+    marginTop: theme.spacing.md,
+    textDecorationLine: 'underline',
   }
 });
 
