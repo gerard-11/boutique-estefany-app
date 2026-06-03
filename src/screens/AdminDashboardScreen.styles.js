@@ -15,7 +15,19 @@ export const styles = StyleSheet.create({
     padding: theme.spacing.lg,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 25,
+  },
+  createButton: {
+    backgroundColor: theme.colors.primary,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...theme.shadows.light,
   },
   welcome: {
     fontSize: theme.typography.fontSize.xxl,
