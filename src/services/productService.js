@@ -1,5 +1,26 @@
 import api from './api';
+import { z } from 'zod';
 
+// --- Esquema de Validación ---
+export const productSchema = z.object({
+  name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+  price: z.coerce.number().positive("El precio de venta es obligatorio y debe ser positivo"),
+  cost: z.coerce.number().positive("El precio de compra es obligatorio y debe ser positivo"),
+  stock: z.coerce.number().int().min(0, "El stock no puede ser negativo"),
+  departmentName: z.string().optional(),
+  categoryName: z.string().optional(),
+  departmentId: z.string().nullable().optional(),
+  categoryId: z.string().nullable().optional(),
+}).refine(data => {
+  const hasDept = data.departmentId || data.departmentName;
+  const hasCat = data.categoryId || data.categoryName;
+  return hasDept && hasCat;
+}, {
+  message: "Debes seleccionar o crear un departamento y categoría",
+  path: ["categoryId"]
+});
+
+// --- Servicios de API ---
 export const getProducts = async () => {
   const response = await api.get('/products');
   return response.data;

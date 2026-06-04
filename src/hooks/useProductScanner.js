@@ -26,7 +26,7 @@ export const useCategories = (departmentId) => {
   return useQuery({
     queryKey: ['categories', departmentId],
     queryFn: () => getCategories(departmentId),
-    enabled: !!departmentId,
+    enabled: !!departmentId && departmentId !== 'NEW',
   });
 };
 
