@@ -10,6 +10,8 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
+      if (config.skipAuth) return config;
+      
       // Recuperamos el token de la persistencia física
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {

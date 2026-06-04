@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Modal, 
   View, 
@@ -15,8 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, Camera } from 'expo-camera';
 import { 
   useProductByBarcode, 
-  useDepartments, 
-  useCategories, 
+  useDepartmentsData, 
   useCreateIntelligentProduct
 } from '../hooks/useProductScanner';
 import { productSchema } from '../services/productService';
@@ -35,6 +34,9 @@ export default function ScannerModal({ visible, onClose }) {
     price: '',
     cost: '',
     stock: '1',
+    size: '',
+    sizeUnit: '',
+    color: '',
     departmentName: '',
     categoryName: '',
     departmentId: null,
@@ -45,21 +47,31 @@ export default function ScannerModal({ visible, onClose }) {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerType, setPickerType] = useState(null);
 
-  // Hooks
+  // Hooks (Carga masticada)
   const { data: product, isLoading: isVerifying } = useProductByBarcode(scannedBarcode);
-  const { data: departments } = useDepartments();
-  const { data: categories } = useCategories(formData.departmentId);
+  const { data: departmentsData, isLoading: loadingDepts } = useDepartmentsData();
   const { mutate: createProduct, isPending: isSaving } = useCreateIntelligentProduct();
+
+  // Lógica de datos masticados (Categorías filtradas o todas)
+  const availableCategories = useMemo(() => {
+    if (!departmentsData) return [];
+    
+    // Si hay un depto seleccionado, mostramos solo sus categorías
+    if (formData.departmentId && formData.departmentId !== 'NEW') {
+      const dept = departmentsData.find(d => d.id === formData.departmentId);
+      return dept ? dept.categories : [];
+    }
+    
+    // Si NO hay depto, mostramos TODAS las categorías de la boutique (Inteligente)
+    return departmentsData.flatMap(dept => 
+      dept.categories.map(cat => ({ ...cat, parentDeptId: dept.id, parentDeptName: dept.name }))
+    );
+  }, [departmentsData, formData.departmentId]);
 
   const checkPermission = async () => {
     try {
       const { status: existingStatus } = await Camera.getCameraPermissionsAsync();
-      if (existingStatus === 'granted') {
-        setHasPermission(true);
-      } else {
-        const { status: newStatus } = await Camera.requestCameraPermissionsAsync();
-        setHasPermission(newStatus === 'granted');
-      }
+      setHasPermission(existingStatus === 'granted');
     } catch (e) {
       setHasPermission(false);
     }
@@ -81,6 +93,9 @@ export default function ScannerModal({ visible, onClose }) {
       price: '',
       cost: '',
       stock: '1',
+      size: '',
+      sizeUnit: '',
+      color: '',
       departmentName: '',
       categoryName: '',
       departmentId: null,
@@ -118,7 +133,8 @@ export default function ScannerModal({ visible, onClose }) {
         newErrors[issue.path[0]] = issue.message;
       });
       setErrors(newErrors);
-      Alert.alert('Error de validación', 'Por favor revisa los campos marcados');
+      const firstErrorMessage = validation.error.issues[0]?.message || 'Datos inválidos';
+      Alert.alert('Error de validación', firstErrorMessage);
       return;
     }
 
@@ -126,8 +142,11 @@ export default function ScannerModal({ visible, onClose }) {
       barcode: scannedBarcode,
       name: formData.name,
       price: parseFloat(formData.price),
-      cost: formData.cost ? parseFloat(formData.cost) : null,
+      cost: parseFloat(formData.cost),
       stock: parseInt(formData.stock) || 0,
+      size: formData.size || null,
+      sizeUnit: formData.sizeUnit || null,
+      color: formData.color || null,
     };
 
     if (formData.categoryId && formData.categoryId !== 'NEW') {
@@ -147,28 +166,34 @@ export default function ScannerModal({ visible, onClose }) {
         onClose();
       },
       onError: (err) => {
-        Alert.alert('Error', err.response?.data?.message || 'No se pudo guardar el producto');
+        const errorData = err.response?.data?.message;
+        const errorMessage = Array.isArray(errorData) 
+          ? errorData.join('\n') 
+          : (errorData || 'No se pudo guardar el producto');
+        Alert.alert('Error', errorMessage);
       }
     });
   };
 
-  const openPicker = (type) => {
-    setPickerType(type);
-    setPickerVisible(true);
-  };
-
   const selectItem = (item) => {
     if (pickerType === 'department') {
-      if (item === 'NEW') {
+      if (item.id === 'NEW') {
         setFormData(prev => ({ ...prev, departmentId: 'NEW', departmentName: '', categoryId: 'NEW', categoryName: '' }));
       } else {
         setFormData(prev => ({ ...prev, departmentId: item.id, departmentName: item.name, categoryId: null, categoryName: '' }));
       }
     } else {
-      if (item === 'NEW') {
+      if (item.id === 'NEW') {
         setFormData(prev => ({ ...prev, categoryId: 'NEW', categoryName: '' }));
       } else {
-        setFormData(prev => ({ ...prev, categoryId: item.id, categoryName: item.name }));
+        // Lógica Inteligente: Si selecciona una categoría, auto-seleccionamos su depto
+        setFormData(prev => ({ 
+          ...prev, 
+          categoryId: item.id, 
+          categoryName: item.name,
+          departmentId: item.parentDeptId || prev.departmentId,
+          departmentName: item.parentDeptName || prev.departmentName
+        }));
       }
     }
     setPickerVisible(false);
@@ -183,6 +208,13 @@ export default function ScannerModal({ visible, onClose }) {
         <Text style={[styles.productPrice, { color: '#d63384', fontSize: 24 }]}>
           ${typeof product?.price === 'number' ? product.price.toFixed(2) : '0.00'}
         </Text>
+        {(!!product?.size || !!product?.color) && (
+          <Text style={[styles.productInfo, { color: theme.colors.text, fontWeight: 'bold' }]}>
+            {product.size ? `Talla: ${product.size}${product.sizeUnit ? ` ${product.sizeUnit}` : ''}` : ''}
+            {product.size && product.color ? ' | ' : ''}
+            {product.color ? `Color: ${product.color}` : ''}
+          </Text>
+        )}
         {!!product?.cost && (
           <Text style={[styles.productInfo, { color: theme.colors.textSecondary, fontSize: 12, opacity: 0.6 }]}>
             Precio Compra: ${typeof product.cost === 'number' ? product.cost.toFixed(2) : product.cost}
@@ -230,6 +262,20 @@ export default function ScannerModal({ visible, onClose }) {
 
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <View style={[styles.inputGroup, { flex: 1 }]}>
+            <Text style={styles.label}>Precio Compra *</Text>
+            <TextInput 
+              style={[styles.input, errors.cost && { borderColor: '#ff4444' }]} 
+              placeholder="0.00" 
+              keyboardType="decimal-pad"
+              value={formData.cost}
+              onChangeText={(val) => {
+                setFormData(p => ({ ...p, cost: val }));
+                if (errors.cost) setErrors(p => ({ ...p, cost: null }));
+              }}
+            />
+            {errors.cost && <Text style={{ color: '#ff4444', fontSize: 11, marginTop: 2 }}>{errors.cost}</Text>}
+          </View>
+          <View style={[styles.inputGroup, { flex: 1 }]}>
             <Text style={styles.label}>Precio Venta *</Text>
             <TextInput 
               style={[styles.input, errors.price && { borderColor: '#ff4444' }]} 
@@ -243,19 +289,35 @@ export default function ScannerModal({ visible, onClose }) {
             />
             {errors.price && <Text style={{ color: '#ff4444', fontSize: 11, marginTop: 2 }}>{errors.price}</Text>}
           </View>
-          <View style={[styles.inputGroup, { flex: 1 }]}>
-            <Text style={styles.label}>Precio Compra</Text>
+        </View>
+
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={[styles.inputGroup, { flex: 1.5 }]}>
+            <Text style={styles.label}>Talla (Size)</Text>
             <TextInput 
-              style={[styles.input, errors.cost && { borderColor: '#ff4444' }]} 
-              placeholder="0.00" 
-              keyboardType="decimal-pad"
-              value={formData.cost}
-              onChangeText={(val) => {
-                setFormData(p => ({ ...p, cost: val }));
-                if (errors.cost) setErrors(p => ({ ...p, cost: null }));
-              }}
+              style={styles.input} 
+              placeholder="32, M, 27..." 
+              value={formData.size}
+              onChangeText={(val) => setFormData(p => ({ ...p, size: val }))}
             />
-            {errors.cost && <Text style={{ color: '#ff4444', fontSize: 11, marginTop: 2 }}>{errors.cost}</Text>}
+          </View>
+          <View style={[styles.inputGroup, { flex: 1 }]}>
+            <Text style={styles.label}>Unidad</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="MX, US..." 
+              value={formData.sizeUnit}
+              onChangeText={(val) => setFormData(p => ({ ...p, sizeUnit: val }))}
+            />
+          </View>
+          <View style={[styles.inputGroup, { flex: 1.5 }]}>
+            <Text style={styles.label}>Color</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="Azul, Rojo..." 
+              value={formData.color}
+              onChangeText={(val) => setFormData(p => ({ ...p, color: val }))}
+            />
           </View>
         </View>
 
@@ -273,7 +335,7 @@ export default function ScannerModal({ visible, onClose }) {
           />
         </View>
 
-        {/* Sección de Departamento */}
+        {/* Departamento */}
         <View style={styles.inputGroup}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
              <Text style={styles.label}>Departamento *</Text>
@@ -283,7 +345,6 @@ export default function ScannerModal({ visible, onClose }) {
                </TouchableOpacity>
              )}
           </View>
-          
           {formData.departmentId === 'NEW' ? (
              <TextInput 
                 style={[styles.input, { borderColor: theme.colors.primary }]} 
@@ -295,17 +356,15 @@ export default function ScannerModal({ visible, onClose }) {
           ) : (
             <TouchableOpacity 
               style={[styles.selectButton, errors.categoryId && !formData.departmentId && { borderColor: '#ff4444' }]} 
-              onPress={() => openPicker('department')}
+              onPress={() => { setPickerType('department'); setPickerVisible(true); }}
             >
-              <Text style={styles.selectButtonText}>
-                {formData.departmentId ? formData.departmentName : 'Seleccionar departamento...'}
-              </Text>
+              <Text style={styles.selectButtonText}>{formData.departmentId ? formData.departmentName : 'Seleccionar departamento...'}</Text>
               <Text style={{ color: theme.colors.primary }}>▼</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        {/* Sección de Categoría */}
+        {/* Categoría */}
         <View style={styles.inputGroup}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
              <Text style={styles.label}>Categoría *</Text>
@@ -315,7 +374,6 @@ export default function ScannerModal({ visible, onClose }) {
                </TouchableOpacity>
              )}
           </View>
-
           {formData.categoryId === 'NEW' ? (
              <TextInput 
                 style={[styles.input, { borderColor: theme.colors.primary }]} 
@@ -327,11 +385,9 @@ export default function ScannerModal({ visible, onClose }) {
           ) : (
             <TouchableOpacity 
               style={[styles.selectButton, errors.categoryId && { borderColor: '#ff4444' }]} 
-              onPress={() => openPicker('category')}
+              onPress={() => { setPickerType('category'); setPickerVisible(true); }}
             >
-              <Text style={styles.selectButtonText}>
-                {formData.categoryId ? formData.categoryName : 'Seleccionar categoría...'}
-              </Text>
+              <Text style={styles.selectButtonText}>{formData.categoryId ? formData.categoryName : 'Seleccionar categoría...'}</Text>
               <Text style={{ color: theme.colors.primary }}>▼</Text>
             </TouchableOpacity>
           )}
@@ -343,11 +399,7 @@ export default function ScannerModal({ visible, onClose }) {
           onPress={handleSave}
           disabled={isSaving}
         >
-          {isSaving ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.saveButtonText}>Guardar Producto</Text>
-          )}
+          {isSaving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveButtonText}>Guardar Producto</Text>}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.resetButton} onPress={resetScanner}>
@@ -358,30 +410,39 @@ export default function ScannerModal({ visible, onClose }) {
   );
 
   const renderPickerModal = () => {
-    const data = pickerType === 'department' ? departments : categories;
+    const data = pickerType === 'department' ? departmentsData : availableCategories;
     const items = [{ id: 'NEW', name: '+ Crear Nuevo' }, ...(data || [])];
 
     return (
-      <Modal visible={pickerVisible} transparent animationType="fade">
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 }}>
-          <View style={{ backgroundColor: '#fff', borderRadius: 15, maxHeight: '80%' }}>
-            <View style={{ padding: 15, borderBottomWidth: 1, borderColor: '#eee', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Seleccionar {pickerType === 'department' ? 'Depto' : 'Cat'}</Text>
+      <Modal visible={pickerVisible} transparent animationType="slide" onRequestClose={() => setPickerVisible(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 25, borderTopRightRadius: 25, maxHeight: '85%', paddingBottom: 20 }}>
+            <View style={{ padding: 20, borderBottomWidth: 1, borderColor: '#eee', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ fontWeight: 'bold', fontSize: 20, color: theme.colors.text }}>Seleccionar {pickerType === 'department' ? 'Departamento' : 'Categoría'}</Text>
               <TouchableOpacity onPress={() => setPickerVisible(false)}>
-                <Text style={{ color: theme.colors.primary, fontWeight: 'bold' }}>Cerrar</Text>
+                <Text style={{ color: theme.colors.primary, fontWeight: 'bold', fontSize: 16 }}>Cerrar</Text>
               </TouchableOpacity>
             </View>
             <FlatList
               data={items}
               keyExtractor={(item) => item.id?.toString()}
+              contentContainerStyle={{ paddingHorizontal: 10 }}
               renderItem={({ item }) => (
                 <TouchableOpacity 
-                  style={{ padding: 15, borderBottomWidth: 1, borderColor: '#f0f0f0' }}
+                  style={{ paddingVertical: 18, paddingHorizontal: 20, borderBottomWidth: 1, borderColor: '#f5f5f5', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
                   onPress={() => selectItem(item)}
                 >
-                  <Text style={{ color: item.id === 'NEW' ? theme.colors.primary : '#333', fontWeight: item.id === 'NEW' ? 'bold' : 'normal' }}>
-                    {item.name}
-                  </Text>
+                  <View>
+                    <Text style={{ fontSize: 16, color: item.id === 'NEW' ? theme.colors.primary : theme.colors.text, fontWeight: item.id === 'NEW' ? 'bold' : 'normal' }}>
+                      {item.name}
+                    </Text>
+                    {pickerType === 'category' && item.id !== 'NEW' && !formData.departmentId && (
+                      <Text style={{ fontSize: 12, color: '#999' }}>Depto: {item.parentDeptName}</Text>
+                    )}
+                  </View>
+                  {((pickerType === 'department' && formData.departmentId === item.id) || (pickerType === 'category' && formData.categoryId === item.id)) && (
+                    <Text style={{ color: theme.colors.primary, fontWeight: 'bold' }}>✓</Text>
+                  )}
                 </TouchableOpacity>
               )}
             />
@@ -394,12 +455,7 @@ export default function ScannerModal({ visible, onClose }) {
   if (!visible) return null;
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={false}
-      visible={visible}
-      onRequestClose={handleClose}
-    >
+    <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={handleClose}>
       <SafeAreaView style={styles.container}>
         {scannedBarcode ? (
           <View style={{ flex: 1 }}>
@@ -411,46 +467,24 @@ export default function ScannerModal({ visible, onClose }) {
             ) : (
               <>
                 {product ? renderProductFound() : renderNewProductForm()}
+                {renderPickerModal()}
               </>
             )}
-            {renderPickerModal()}
           </View>
         ) : (
           <View style={{ flex: 1 }}>
             {hasPermission === false ? (
               <View style={styles.permissionContainer}>
                 <Text style={styles.permissionText}>No tenemos acceso a la cámara.</Text>
-                <TouchableOpacity style={styles.permissionButton} onPress={checkPermission}>
-                  <Text style={styles.permissionButtonText}>Intentar de nuevo</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.closeButton, { marginTop: 20 }]} onPress={handleClose}>
-                  <Text style={styles.closeButtonText}>Regresar</Text>
-                </TouchableOpacity>
+                <TouchableOpacity style={styles.permissionButton} onPress={checkPermission}><Text style={styles.permissionButtonText}>Intentar de nuevo</Text></TouchableOpacity>
+                <TouchableOpacity style={[styles.closeButton, { marginTop: 20 }]} onPress={handleClose}><Text style={styles.closeButtonText}>Regresar</Text></TouchableOpacity>
               </View>
             ) : (
               <View style={{ flex: 1 }}>
-                <CameraView
-                  style={StyleSheet.absoluteFill}
-                  onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-                  barcodeScannerSettings={{
-                    barcodeTypes: ["qr", "ean13", "ean8", "code128", "upc_a"],
-                  }}
-                />
+                <CameraView style={StyleSheet.absoluteFill} onBarcodeScanned={scanned ? undefined : handleBarCodeScanned} barcodeScannerSettings={{ barcodeTypes: ["qr", "ean13", "ean8", "code128", "upc_a"] }} />
                 <View style={[styles.overlay, StyleSheet.absoluteFill]}>
-                  <View style={styles.unfocusedContainer} />
-                  <View style={{ flexDirection: 'row' }}>
-                    <View style={styles.unfocusedContainer} />
-                    <View style={styles.focusedContainer} />
-                    <View style={styles.unfocusedContainer} />
-                  </View>
-                  <View style={styles.unfocusedContainer}>
-                    <View style={styles.bottomContainer}>
-                      <Text style={styles.instructionText}>Enfoca el código de barras</Text>
-                      <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                        <Text style={styles.closeButtonText}>Cancelar</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+                  <View style={styles.unfocusedContainer} /><View style={{ flexDirection: 'row' }}><View style={styles.unfocusedContainer} /><View style={styles.focusedContainer} /><View style={styles.unfocusedContainer} /></View>
+                  <View style={styles.unfocusedContainer}><View style={styles.bottomContainer}><Text style={styles.instructionText}>Enfoca el código de barras</Text><TouchableOpacity style={styles.closeButton} onPress={handleClose}><Text style={styles.closeButtonText}>Cancelar</Text></TouchableOpacity></View></View>
                 </View>
               </View>
             )}

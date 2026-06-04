@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getProductByBarcode, 
   getDepartments, 
-  getCategories, 
   createProduct 
 } from '../services/productService';
 
@@ -15,18 +14,10 @@ export const useProductByBarcode = (barcode) => {
   });
 };
 
-export const useDepartments = () => {
+export const useDepartmentsData = () => {
   return useQuery({
-    queryKey: ['departments'],
+    queryKey: ['departments_full'],
     queryFn: getDepartments,
-  });
-};
-
-export const useCategories = (departmentId) => {
-  return useQuery({
-    queryKey: ['categories', departmentId],
-    queryFn: () => getCategories(departmentId),
-    enabled: !!departmentId && departmentId !== 'NEW',
   });
 };
 
@@ -37,8 +28,7 @@ export const useCreateIntelligentProduct = () => {
     mutationFn: createProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['departments'] });
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['departments_full'] });
     },
   });
 };
