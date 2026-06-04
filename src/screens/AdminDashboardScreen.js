@@ -3,12 +3,12 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   ActivityIndicator,
   RefreshControl,
   Alert,
   TouchableOpacity
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDashboard } from '../hooks/useDashboard';
 import ScannerFAB from '../components/ScannerFAB';
@@ -19,14 +19,6 @@ import { styles } from './AdminDashboardScreen.styles';
 export default function AdminDashboardScreen() {
   const { data, isLoading, isError, refetch, isRefetching } = useDashboard();
   const [scannerVisible, setScannerVisible] = useState(false);
-  const [createProductVisible, setCreateProductVisible] = useState(false);
-  const [scannedBarcode, setScannedBarcode] = useState(null);
-
-  const handleScan = ({ type, data }) => {
-    setScannerVisible(false);
-    setScannedBarcode(data);
-    setCreateProductVisible(true);
-  };
 
   if (isLoading) {
     return (
