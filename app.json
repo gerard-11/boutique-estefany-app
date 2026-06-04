@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "jsEngine": "hermes",
     "newArchEnabled": true,
     "scheme": "boutique-estefany",
     "splash": {
@@ -15,13 +16,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.gerardorito.boutiqueestefany",
-      "urlSchemes": ["com.googleusercontent.apps.988785588012-nufg93ft1v2eedep5voo21i18mr83kj9"]
+      "bundleIdentifier": "com.gerardorito.boutiqueestefany"
     },
     "android": {
       "package": "com.gerardorito.boutiqueestefany",
       "googleServicesFile": "./google-services.json",
-      "urlSchemes": ["com.googleusercontent.apps.988785588012-vg4q8fq0ohb51rplckjcr1p0d2laq4vc"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
