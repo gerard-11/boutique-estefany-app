@@ -5,7 +5,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthContext } from '../context/AuthContext';
 
 import LoginScreen from '../screens/LoginScreen';
-import CatalogScreen from '../screens/CatalogScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 
 const Stack = createNativeStackNavigator();
@@ -38,21 +37,15 @@ export default function AppNavigator() {
           <>
             {/* Si es ADMIN, su "Home" es el Dashboard */}
             {profile?.role === 'ADMIN' ? (
-              <>
-                <Stack.Screen 
-                  name="AdminDashboard" 
-                  component={AdminDashboardScreen} 
-                />
-                <Stack.Screen 
-                  name="Catalog" 
-                  component={CatalogScreen} 
-                />
-              </>
-            ) : (
-              /* Si es CLIENT, su "Home" es el Catálogo */
               <Stack.Screen 
-                name="Catalog" 
-                component={CatalogScreen} 
+                name="AdminDashboard" 
+                component={AdminDashboardScreen} 
+              />
+            ) : (
+              /* Si es CLIENT y ya no hay catálogo, podemos mostrar una pantalla de bienvenida o el mismo login */
+              <Stack.Screen 
+                name="Login" 
+                component={LoginScreen} 
               />
             )}
           </>
