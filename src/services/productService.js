@@ -23,7 +23,6 @@ export const productSchema = z.object({
   path: ["categoryId"]
 });
 
-// --- Servicios de API ---
 export const getProducts = async () => {
   const response = await api.get('/products');
   return response.data;
@@ -48,5 +47,10 @@ export const getCategories = async (departmentId) => {
   const response = await api.get('/categories', {
     params: { departmentId }
   });
+  return response.data;
+};
+
+export const adjustStock = async (id, amount) => {
+  const response = await api.patch(`/products/${id}/adjustment`, { amount });
   return response.data;
 };

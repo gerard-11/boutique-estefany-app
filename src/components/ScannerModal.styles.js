@@ -4,7 +4,7 @@ import { theme } from '../theme';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.text, // Fondo oscuro para la cámara
+    backgroundColor: theme.colors.text,
   },
   camera: {
     flex: 1,
@@ -76,7 +76,6 @@ export const styles = StyleSheet.create({
     color: theme.colors.white,
     fontWeight: theme.typography.fontWeight.bold,
   },
-  // Nuevos estilos para resultados y formulario
   resultsContainer: {
     padding: theme.spacing.xl,
     backgroundColor: theme.colors.background,
@@ -175,5 +174,85 @@ export const styles = StyleSheet.create({
     padding: theme.spacing.xxl,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // --- Estilos para Acciones Rápidas ---
+  statusBanner: {
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+    gap: theme.spacing.sm,
+  },
+  statusText: {
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: theme.spacing.md,
+  },
+  actionButton: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: theme.colors.white,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    ...theme.shadows.small,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  actionLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    textAlign: 'center',
+  },
+  returnButton: {
+    backgroundColor: '#fff5f5',
+    borderColor: '#ffc9c9',
+    width: '100%',
+  },
+  returnText: {
+    color: '#fa5252',
+  },
+  // --- Estilos para Selector de Clientes ---
+  clientSearchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  clientSearchInput: {
+    flex: 1,
+    padding: theme.spacing.md,
+    fontSize: 14,
+  },
+  clientItem: {
+    padding: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  clientName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+  clientPhone: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
   }
 });

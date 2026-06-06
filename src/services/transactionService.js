@@ -1,23 +1,30 @@
 import api from './api';
 
-export const getProductByBarcode = async (barcode) => {
-  const response = await api.get(`/products/barcode/${barcode}`);
-  return response.data;
-};
+export const transactionService = {
+  /**
+   * Crea una nueva transacción (Venta, Préstamo, Apartado)
+   * @param {Object} data - { userId, type, productBarcodes: [] }
+   */
+  createTransaction: async (data) => {
+    const response = await api.post('/transactions', data);
+    return response.data;
+  },
 
-export const createTransaction = async (transactionData) => {
-  // transactionData: { userId, type, productBarcodes, discountPercentage, forceApproval }
-  const response = await api.post('/transactions', transactionData);
-  return response.data;
-};
+  /**
+   * Registra una devolución rápida por código de barras
+   * @param {string} barcode 
+   */
+  returnProduct: async (barcode) => {
+    const response = await api.post(`/transactions/barcode/${barcode}/return`);
+    return response.data;
+  },
 
-export const adjustInventory = async (productId, adjustmentData) => {
-  // adjustmentData: { quantity, type, reason, newCost, newPrice }
-  const response = await api.patch(`/products/${productId}/adjustment`, adjustmentData);
-  return response.data;
-};
-
-export const searchClients = async (query) => {
-  const response = await api.get(`/users/search?q=${query}&role=CLIENT`);
-  return response.data;
+  /**
+   * Busca clientes/usuarios por nombre o teléfono
+   * @param {string} search 
+   */
+  searchUsers: async (search) => {
+    const response = await api.get(`/users?search=${search}`);
+    return response.data;
+  }
 };
