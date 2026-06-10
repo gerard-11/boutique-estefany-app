@@ -98,7 +98,11 @@ export default function ScannerScreen({ navigation }) {
         return;
       }
 
-      if (isDirty || step === 'NEW_FORM' || barcode) {
+      // BLOQUEO SENSIBLE: Si hay un código escaneado O si el formulario tiene cambios (como el nombre)
+      const hasBarcode = !!barcode;
+      const hasFormContent = isDirty; // isDirty de RHF detecta si el usuario escribió en el nombre u otros campos
+
+      if (hasBarcode || hasFormContent) {
         e.preventDefault();
         Alert.alert(
           'Descartar cambios',
@@ -115,23 +119,32 @@ export default function ScannerScreen({ navigation }) {
       }
     });
     return unsubscribe;
-  }, [navigation, isDirty, step, barcode]);
+  }, [navigation, isDirty, barcode]);
 
-  useEffect(() => {
-    const backAction = () => {
-      if (Keyboard.isVisible()) {
-        Keyboard.dismiss();
-        return true;
-      }
-      if (step !== 'SCANNING' || isDirty) {
-        navigation.goBack();
-        return true;
-      }
-      return false;
-    };
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-    return () => backHandler.remove();
-  }, [navigation, isDirty, step]);
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        if (Keyboard.isVisible()) {
+          Keyboard.dismiss();
+          return true;
+        }
+        
+        if (showStockModal) return false; 
+
+        const hasBarcode = !!barcode;
+        const hasFormContent = isDirty;
+
+        if (hasBarcode || hasFormContent) {
+          navigation.goBack(); 
+          return true;
+        }
+        return false;
+      };
+
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+      return () => backHandler.remove();
+    }, [navigation, isDirty, barcode, showStockModal])
+  );
 
   return (
     <FormProvider {...methods}>
@@ -180,6 +193,10 @@ export default function ScannerScreen({ navigation }) {
                   onSave={handleSaveProduct}
                   onCancel={() => handleCancel(isDirty)}
                   onOpenPicker={openPicker}
+                  watchDeptId={watchDeptId}
+                  watchCatId={watch('categoryId')}
+                  watchDeptName={watch('departmentName')}
+                  watchCatName={watch('categoryName')}
                 />
               )
             )}
@@ -195,6 +212,7 @@ export default function ScannerScreen({ navigation }) {
 
         <ScannerPickers 
           picker={picker}
+          selectedId={picker.type === 'department' ? watchDeptId : watch('categoryId')}
           departmentsData={departmentsData}
           availableCategories={availableCategories}
           showClientPicker={showClientPicker}
