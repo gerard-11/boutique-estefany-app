@@ -3,7 +3,7 @@ import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { CircularActionMenu } from './CircularActionMenu';
 import { styles } from '../ScannerScreen.styles';
 
-export const ProductFound = ({ product, targets, onTransaction, onStockAdjustment, onReturn, onReset }) => {
+export const ProductFound = ({ product, onReturn, onReset }) => {
   return (
     <ScrollView style={styles.resultsContainer} contentContainerStyle={{ paddingBottom: 40 }}>
       <Text style={styles.resultTitle}>Producto Escaneado</Text>
@@ -15,8 +15,6 @@ export const ProductFound = ({ product, targets, onTransaction, onStockAdjustmen
       
       <CircularActionMenu 
         product={product}
-        onTransaction={onTransaction}
-        onStockAdjustment={onStockAdjustment}
         onReturn={onReturn}
       />
 

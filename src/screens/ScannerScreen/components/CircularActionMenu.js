@@ -4,10 +4,10 @@ import Animated, {
   useSharedValue, 
   useAnimatedStyle, 
   withSpring, 
-  withDelay,
   interpolate
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useScannerStore } from '../../../hooks/useScannerStore';
 import { styles } from './CircularActionMenu.styles';
 import { theme } from '../../../theme';
 
@@ -51,8 +51,9 @@ const AnimatedButton = ({ index, total, expansion, action, onPress }) => {
   );
 };
 
-export const CircularActionMenu = ({ product, onTransaction, onStockAdjustment, onReturn }) => {
+export const CircularActionMenu = ({ product, onReturn }) => {
   const expansion = useSharedValue(0);
+  const { openStockModal, setTransaction } = useScannerStore();
   
   const status = product?.inventoryStatus?.status || 'AVAILABLE';
   const isAvailable = status === 'AVAILABLE';
@@ -68,9 +69,9 @@ export const CircularActionMenu = ({ product, onTransaction, onStockAdjustment, 
   if (isAvailable) {
     actions.push(
       { type: 'SALE', icon: 'cart-arrow-down', label: 'Venta', color: theme.colors.primary },
-      { type: 'PRESTAMO', icon: 'hand-heart', label: 'Prestado', color: '#339af0' },
+      { type: 'PRESTAMO', icon: 'hand-heart', label: 'Prestar', color: '#339af0' },
       { type: 'APARTADO', icon: 'bookmark-check', label: 'Apartar', color: '#fcc419' },
-      { type: 'STOCK', icon: 'plus-box-multiple', label: 'Stock', color: '#51cf66' }
+      { type: 'STOCK', icon: 'plus-box-multiple', label: 'Stock', color: theme.colors.primary }
     );
   } else if (isApartado) {
     actions.push(
@@ -84,9 +85,9 @@ export const CircularActionMenu = ({ product, onTransaction, onStockAdjustment, 
   }
 
   const handleAction = (action) => {
-    if (action.type === 'STOCK') onStockAdjustment();
+    if (action.type === 'STOCK') openStockModal();
     else if (action.type === 'RETURN') onReturn();
-    else onTransaction(action.type);
+    else setTransaction(action.type);
   };
 
   const centerIconStyle = useAnimatedStyle(() => ({
@@ -95,23 +96,19 @@ export const CircularActionMenu = ({ product, onTransaction, onStockAdjustment, 
 
   return (
     <View style={styles.container}>
-      {/* Banner de Status si no está disponible */}
       {(isApartado || isPrestamo) && (
         <View style={styles.statusBanner}>
           <MaterialCommunityIcons name="alert-circle" color="#fd7e14" size={20} />
           <Text style={styles.statusText}>
-            {isApartado ? 'Apartado por: ' : 'Prestado a: '}
-            {product?.inventoryStatus?.assignedTo?.name || 'Cliente'}
+            {`${isApartado ? 'Apartado por: ' : 'Prestado a: '}${product?.inventoryStatus?.assignedTo?.name || 'Cliente'}`}
           </Text>
         </View>
       )}
 
-      {/* Botón Central (Logo o Icono del Producto) */}
       <Animated.View style={[styles.centerPoint, centerIconStyle]}>
         <MaterialCommunityIcons name="tag-heart" color="#fff" size={40} />
       </Animated.View>
 
-      {/* Botones de Acción Distribuidos */}
       {actions.map((action, index) => (
         <AnimatedButton 
           key={action.type + index}
