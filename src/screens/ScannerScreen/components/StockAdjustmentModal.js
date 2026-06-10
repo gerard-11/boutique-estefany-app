@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Modal, 
   View, 
@@ -9,7 +9,9 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet
+  StyleSheet,
+  Alert,
+  BackHandler
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,7 +31,7 @@ export const StockAdjustmentModal = ({ visible, onClose, onConfirm, product }) =
   const [type, setType] = useState('IN'); // 'IN' (Entrada) o 'OUT' (Salida)
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const { control, handleSubmit, formState: { errors, isValid }, reset } = useForm({
+  const { control, handleSubmit, formState: { errors, isValid, isDirty }, reset } = useForm({
     resolver: zodResolver(adjustmentSchema),
     defaultValues: {
       quantity: '',
@@ -46,6 +48,38 @@ export const StockAdjustmentModal = ({ visible, onClose, onConfirm, product }) =
     setShowAdvanced(false);
     onClose();
   };
+
+  // Protección contra cierre accidental (Botón Atrás de Android)
+  useEffect(() => {
+    if (visible) {
+      const backAction = () => {
+        if (isDirty) {
+          Alert.alert("Cambios sin guardar", "¿Deseas cerrar el ajuste? Se perderán los datos ingresados.", [
+            { text: "No", style: "cancel" },
+            { text: "Sí", onPress: handleClose }
+          ]);
+          return true;
+        }
+        handleClose();
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+      return () => backHandler.remove();
+    }
+  }, [visible, isDirty, handleClose]);
+
+  // Efecto para sincronizar el formulario cuando el producto cambia (Evita estado atrasado)
+  useEffect(() => {
+    if (product) {
+      reset({
+        quantity: '',
+        reason: '',
+        newPrice: product.price?.toString() || '',
+        newCost: product.cost?.toString() || '',
+      });
+    }
+  }, [product, reset]);
 
   const onSubmit = (data) => {
     const finalQuantity = type === 'OUT' ? -Math.abs(data.quantity) : Math.abs(data.quantity);
@@ -72,17 +106,47 @@ export const StockAdjustmentModal = ({ visible, onClose, onConfirm, product }) =
       visible={visible}
       transparent
       animationType="slide"
-      onRequestClose={handleClose}
+      onRequestClose={() => {
+        if (isDirty) {
+          Alert.alert("Cambios sin guardar", "¿Deseas cerrar?", [
+            { text: "No", style: "cancel" },
+            { text: "Sí", onPress: handleClose }
+          ]);
+        } else {
+          handleClose();
+        }
+      }}
     >
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.modalOverlay}
       >
-        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+        <Pressable 
+          style={StyleSheet.absoluteFill} 
+          onPress={() => {
+            if (isDirty) {
+              Alert.alert("Cambios sin guardar", "¿Deseas cerrar?", [
+                { text: "No", style: "cancel" },
+                { text: "Sí", onPress: handleClose }
+              ]);
+            } else {
+              handleClose();
+            }
+          }} 
+        />
         <View style={styles.modalContent}>
           <View style={styles.header}>
             <Text style={styles.title}>Ajuste de Stock</Text>
-            <TouchableOpacity onPress={handleClose}>
+            <TouchableOpacity onPress={() => {
+              if (isDirty) {
+                Alert.alert("Cambios sin guardar", "¿Deseas cerrar?", [
+                  { text: "No", style: "cancel" },
+                  { text: "Sí", onPress: handleClose }
+                ]);
+              } else {
+                handleClose();
+              }
+            }}>
               <MaterialCommunityIcons name="close" size={24} color={theme.colors.textSecondary} />
             </TouchableOpacity>
           </View>

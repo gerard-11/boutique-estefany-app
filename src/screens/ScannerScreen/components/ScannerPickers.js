@@ -1,10 +1,12 @@
 import React from 'react';
 import { Modal, View, FlatList, TouchableOpacity, Text, TextInput } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { styles } from '../ScannerScreen.styles';
 import { theme } from '../../../theme';
 
 export const ScannerPickers = ({ 
   picker, 
+  selectedId,
   departmentsData, 
   availableCategories, 
   showClientPicker, 
@@ -21,21 +23,44 @@ export const ScannerPickers = ({
       {/* Picker Modal (Deptos/Categorías) */}
       <Modal visible={picker.visible} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
-          <View style={{ backgroundColor: '#fff', padding: 20, borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
+          <View style={{ backgroundColor: '#fff', padding: 20, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '80%' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, color: theme.colors.text }}>
+              Seleccionar {picker.type === 'department' ? 'Departamento' : 'Categoría'}
+            </Text>
             <FlatList
               data={[{ id: 'NEW', name: '+ Crear Nuevo' }, ...(picker.type === 'department' ? departmentsData : availableCategories)]}
-              renderItem={({ item }) => (
-                <TouchableOpacity 
-                  style={{ padding: 15, borderBottomWidth: 1, borderColor: '#eee' }}
-                  onPress={() => onSelectItem(item)}
-                >
-                  <Text>{item.name}</Text>
-                </TouchableOpacity>
-              )}
+              renderItem={({ item }) => {
+                const isSelected = item.id === selectedId;
+                return (
+                  <TouchableOpacity 
+                    style={{ 
+                      padding: 15, 
+                      borderBottomWidth: 1, 
+                      borderColor: '#eee',
+                      backgroundColor: isSelected ? theme.colors.primary + '15' : 'transparent',
+                      borderRadius: 8,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                    onPress={() => onSelectItem(item)}
+                  >
+                    <Text style={{ 
+                      color: isSelected ? theme.colors.primary : theme.colors.text,
+                      fontWeight: isSelected ? 'bold' : 'normal'
+                    }}>
+                      {item.name}
+                    </Text>
+                    {isSelected && (
+                      <MaterialCommunityIcons name="check-circle" size={20} color={theme.colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
               keyExtractor={item => item.id.toString()}
             />
-            <TouchableOpacity onPress={onClosePicker}>
-              <Text style={{ textAlign: 'center', marginTop: 10, color: theme.colors.primary }}>Cerrar</Text>
+            <TouchableOpacity onPress={onClosePicker} style={{ paddingVertical: 15 }}>
+              <Text style={{ textAlign: 'center', fontWeight: 'bold', color: theme.colors.primary }}>Cerrar</Text>
             </TouchableOpacity>
           </View>
         </View>
