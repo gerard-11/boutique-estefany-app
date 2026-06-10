@@ -38,7 +38,7 @@ export const useCreateIntelligentProduct = () => {
 export const useAdjustStock = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, amount }) => adjustStock(id, amount),
+    mutationFn: ({ id, data }) => adjustStock(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product'] });

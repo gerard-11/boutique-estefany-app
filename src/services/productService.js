@@ -50,7 +50,7 @@ export const getCategories = async (departmentId) => {
   return response.data;
 };
 
-export const adjustStock = async (id, amount) => {
-  const response = await api.patch(`/products/${id}/adjustment`, { amount });
+export const adjustStock = async (id, data) => {
+  const response = await api.patch(`/products/${id}/adjustment`, data);
   return response.data;
 };
