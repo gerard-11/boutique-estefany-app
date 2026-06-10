@@ -1,0 +1,70 @@
+import { StyleSheet } from 'react-native';
+import { theme } from '../../../theme';
+
+export const styles = StyleSheet.create({
+  container: {
+    height: 320,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  centerPoint: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+  },
+  actionButton: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+  },
+  labelContainer: {
+    position: 'absolute',
+    bottom: -22,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  labelText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  statusBanner: {
+    position: 'absolute',
+    top: -40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff4e6',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ffd8a8',
+  },
+  statusText: {
+    marginLeft: 8,
+    color: '#d9480f',
+    fontWeight: '600',
+    fontSize: 12,
+  }
+});

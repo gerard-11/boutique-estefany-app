@@ -1,11 +1,11 @@
 import React from 'react';
 import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
-import { ActionGrid } from './ActionGrid';
+import { CircularActionMenu } from './CircularActionMenu';
 import { styles } from '../ScannerScreen.styles';
 
 export const ProductFound = ({ product, targets, onTransaction, onStockAdjustment, onReturn, onReset }) => {
   return (
-    <ScrollView style={styles.resultsContainer}>
+    <ScrollView style={styles.resultsContainer} contentContainerStyle={{ paddingBottom: 40 }}>
       <Text style={styles.resultTitle}>Producto Escaneado</Text>
       <View style={styles.productCard}>
         <Text style={styles.productName}>{product?.name}</Text>
@@ -13,9 +13,8 @@ export const ProductFound = ({ product, targets, onTransaction, onStockAdjustmen
         <Text style={styles.productInfo}>Stock: {product?.stock} pz | {product?.category?.name}</Text>
       </View>
       
-      <ActionGrid 
+      <CircularActionMenu 
         product={product}
-        targets={targets}
         onTransaction={onTransaction}
         onStockAdjustment={onStockAdjustment}
         onReturn={onReturn}
