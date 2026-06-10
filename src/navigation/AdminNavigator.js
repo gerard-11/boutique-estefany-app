@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import InventoryScreen from '../screens/InventoryScreen';
+import ScannerScreen from '../screens/ScannerScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 
 const Drawer = createDrawerNavigator();
@@ -40,6 +41,15 @@ export default function AdminNavigator() {
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="package-variant-closed" color={color} size={size} />
           )
+        }}
+      />
+      <Drawer.Screen 
+        name="Scanner" 
+        component={ScannerScreen} 
+        options={{
+          title: 'Escáner',
+          headerShown: false,
+          drawerItemStyle: { display: 'none' }
         }}
       />
     </Drawer.Navigator>

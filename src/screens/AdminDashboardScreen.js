@@ -10,13 +10,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDashboard } from '../hooks/useDashboard';
 import ScannerFAB from '../components/ScannerFAB';
-import ScannerModal from '../components/ScannerModal';
 import MetricCard from '../components/MetricCard';
 import { styles } from './AdminDashboardScreen.styles';
 
-export default function AdminDashboardScreen() {
+export default function AdminDashboardScreen({ navigation }) {
   const { data, isLoading, isError, refetch, isRefetching } = useDashboard();
-  const [scannerVisible, setScannerVisible] = useState(false);
 
   if (isLoading) {
     return (
@@ -81,12 +79,7 @@ export default function AdminDashboardScreen() {
         </View>
       </ScrollView>
 
-      <ScannerFAB onPress={() => setScannerVisible(true)} />
-
-      <ScannerModal
-        visible={scannerVisible}
-        onClose={() => setScannerVisible(false)}
-      />
+      <ScannerFAB onPress={() => navigation.navigate('Scanner')} />
     </SafeAreaView>
   );
 }

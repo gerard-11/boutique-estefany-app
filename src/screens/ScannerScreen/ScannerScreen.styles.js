@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { theme } from '../theme';
+import { theme } from '../../theme';
 
 export const styles = StyleSheet.create({
   container: {
@@ -106,7 +106,7 @@ export const styles = StyleSheet.create({
   productPrice: {
     fontSize: theme.typography.fontSize.xl,
     fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.secondary,
+    color: theme.colors.success,
     marginTop: theme.spacing.xs,
   },
   productInfo: {
@@ -191,12 +191,12 @@ export const styles = StyleSheet.create({
   actionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: 12,
     marginTop: theme.spacing.md,
   },
   actionButton: {
-    flex: 1,
-    minWidth: '45%',
+    width: '48%', // Asegura 2 columnas con el gap
     backgroundColor: theme.colors.white,
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.lg,
@@ -254,5 +254,22 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textSecondary,
     marginTop: 2,
-  }
+  },
+  resetButton: {
+    backgroundColor: '#f1f3f5',
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    alignItems: 'center',
+    marginTop: theme.spacing.lg, // Reducido de XL para subirlo un poco
+    marginBottom: theme.spacing.xl, // Añadido para que no pegue al fondo
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  resetButtonText: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
 });
