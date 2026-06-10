@@ -26,11 +26,12 @@ export default function AdminDashboardScreen({ navigation }) {
   }
 
   const metrics = {
-    capitalTotal: data?.capitalTotal ?? 0,
-    dineroVolando: data?.dineroVolando ?? 0,
+    capitalTotal: data?.totalCapital ?? 0,
+    dineroVolando: data?.moneyInTheAir ?? 0,
     mermasMes: data?.mermasMes ?? 0,
-    liquidezDia: data?.liquidezDia ?? 0
+    liquidezDia: data?.liquidityToday ?? 0
   };
+  console.log('Métricas obtenidas:', metrics);
 
   return (
     <SafeAreaView style={styles.container}>

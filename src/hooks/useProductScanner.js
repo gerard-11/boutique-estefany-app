@@ -31,6 +31,7 @@ export const useCreateIntelligentProduct = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['departments_full'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
     },
   });
 };
@@ -42,6 +43,7 @@ export const useAdjustStock = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product'] });
+       queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
     },
   });
 };
@@ -61,6 +63,7 @@ export const useCreateTransaction = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product'] });
+       queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
     },
   });
 };
@@ -72,6 +75,7 @@ export const useReturnProduct = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
     },
   });
 };
