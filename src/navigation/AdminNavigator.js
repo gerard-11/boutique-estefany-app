@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import InventoryScreen from '../screens/InventoryScreen';
+import ClientsScreen from '../screens/ClientsScreen';
 import ScannerScreen from '../screens/ScannerScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 
@@ -30,6 +31,16 @@ export default function AdminNavigator() {
           title: 'Resumen',
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="view-dashboard-outline" color={color} size={size} />
+          )
+        }}
+      />
+      <Drawer.Screen 
+        name="Clients" 
+        component={ClientsScreen} 
+        options={{
+          title: 'Clientes',
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account-group-outline" color={color} size={size} />
           )
         }}
       />

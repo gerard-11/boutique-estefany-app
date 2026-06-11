@@ -1,13 +1,26 @@
 import api from './api';
 
-export const getPublicUser = async () => {
-  // Según las especificaciones: GET /users/clients?search=Publico
-  const response = await api.get('/users/clients?search=Publico');
-  // Asumimos que el backend devuelve un array y tomamos el primero
-  return response.data.length > 0 ? response.data[0] : null;
+/**
+ * findAllClients
+ */
+export const getClients = async (searchTerm='',level='') => {
+  const response = await api.get('/users/clients',{
+    params: {
+      search: searchTerm,
+      level: level
+    }
+  });
+  return response.data;
 };
 
-export const searchClients = async (query) => {
-  const response = await api.get(`/users/clients?search=${query}`);
+  // Ver perfil financiero detallado (Admin y el propio Cliente) endpoint para que el cliente pueda ver sus datos
+export const getEnrichedProfile = async (id) => {
+  const response = await api.get(`/users/clients/${id}/profile`)
+  return response.data;
+};
+
+//se envia en data level, creditLimit y reason los 3 son opcionales
+export const updateFinancial = async (userId, data) => {
+  const response = await api.patch(`/users/clients/${userId}/financial`, data);
   return response.data;
 };
