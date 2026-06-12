@@ -33,10 +33,6 @@ export default function ClientDetailScreen({ route, navigation }) {
     data: wishlist, 
     isLoading: isWishlistLoading 
   } = useWishlist(clientId);
-
-console.log('ClientDetailScreen - profile:', profile);
-console.log('ClientDetailScreen - wishlist:', wishlist )
-
   const allMovements = useMemo(() => {
     if (!profile) return [];
     const txs = profile.transactions || [];

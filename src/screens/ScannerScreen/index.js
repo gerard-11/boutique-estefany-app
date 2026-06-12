@@ -46,6 +46,7 @@ export default function ScannerScreen({ navigation }) {
   const { data: clients } = useSearchUsers(userSearch);
 
   // --- React Hook Form ---
+
   const methods = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {

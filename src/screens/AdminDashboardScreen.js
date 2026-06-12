@@ -31,7 +31,7 @@ export default function AdminDashboardScreen({ navigation }) {
     mermasMes: data?.mermasMes ?? 0,
     liquidezDia: data?.liquidityToday ?? 0
   };
-  console.log('Métricas obtenidas:', metrics);
+
 
   return (
     <SafeAreaView style={styles.container}>

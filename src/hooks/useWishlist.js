@@ -6,15 +6,10 @@ import { getClientWishlist } from '../services/wishlistService';
  */
 
 export const useWishlist = (clientId) => {
-  console.log('useWishlist', clientId);
 
   return useQuery({
     queryKey: ['wishlist', clientId],
-    queryFn: () => {
-      console.log('Ejecutando queryFn');
-      console.log('Client ID en queryFn:', clientId);
-      return getClientWishlist(clientId);
-    },
+    queryFn: () =>  getClientWishlist(clientId),
     enabled: !!clientId,
   });
 };
