@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import InventoryScreen from '../screens/InventoryScreen';
 import ClientsScreen from '../screens/ClientsScreen';
+import ClientDetailScreen from '../screens/ClientDetailScreen';
 import ScannerScreen from '../screens/ScannerScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 
@@ -42,6 +43,15 @@ export default function AdminNavigator() {
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="account-group-outline" color={color} size={size} />
           )
+        }}
+      />
+      {/* Detalle de Cliente (Oculto del menú lateral) */}
+      <Drawer.Screen 
+        name="ClientDetail" 
+        component={ClientDetailScreen} 
+        options={{
+          title: 'Perfil del Cliente',
+          drawerItemStyle: { display: 'none' }
         }}
       />
       <Drawer.Screen 

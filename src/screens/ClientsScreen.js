@@ -50,7 +50,7 @@ export default function ClientsScreen({ navigation }) {
     return (
       <TouchableOpacity 
         style={styles.clientCard}
-        onPress={() => {} /* Próximamente: Ir a detalle de cliente */}
+        onPress={() => navigation.navigate('ClientDetail', { clientId: item.id })}
       >
         <View style={styles.avatarContainer}>
           <MaterialCommunityIcons name="account" size={30} color={theme.colors.textSecondary} />
