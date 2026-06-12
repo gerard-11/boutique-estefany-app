@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useClients } from '../hooks/useClients';
+import { useDebounce } from '../hooks/useDebounce';
 import { styles } from './ClientsScreen.styles';
 import { theme } from '../theme';
 
@@ -22,7 +23,7 @@ const Level = ['ORO', 'PLATA', 'BRONCE'];
 
 const getStatusColor = (lastPaymentDate) => {
   if (!lastPaymentDate) return '#fa5252'; // Rojo si nunca ha pagado
-  
+
   const lastPayment = new Date(lastPaymentDate);
   const today = new Date();
   const diffTime = Math.abs(today - lastPayment);
@@ -36,9 +37,11 @@ const getStatusColor = (lastPaymentDate) => {
 export default function ClientsScreen({ navigation }) {
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState(null);
-  
 
-  const { data: clients, isLoading, refetch, isRefetching } = useClients(search, filterLevel || '');
+  const debouncedSearch = useDebounce(search, 500);
+
+  const { data: clients, isLoading, refetch, isRefetching } = useClients(debouncedSearch, filterLevel || '');
+
 
   const renderClientItem = ({ item }) => {
     const statusColor = getStatusColor(item.lastPaymentDate);
