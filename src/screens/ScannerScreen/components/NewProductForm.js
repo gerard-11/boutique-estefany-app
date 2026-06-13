@@ -98,23 +98,6 @@ export const NewProductForm = ({ barcode, isSaving, onSave, onCancel, onOpenPick
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Stock Inicial</Text>
-            <Controller
-              control={control}
-              name="stock"
-              render={({ field: { onChange, value } }) => (
-                <TextInput 
-                  style={[styles.input, errors.stock && { borderColor: '#ff4444' }]} 
-                  placeholder="1" 
-                  keyboardType="number-pad"
-                  onChangeText={onChange}
-                  value={value}
-                />
-              )}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
             <Text style={styles.label}>Departamento</Text>
             <TouchableOpacity 
               style={[styles.selectButton, watchDeptId === 'NEW' && { borderColor: theme.colors.primary, borderWidth: 1 }]} 

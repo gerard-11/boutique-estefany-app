@@ -17,7 +17,6 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
   } = useScannerStore();
 
   const { mutate: createProduct, isPending: isSaving } = useCreateIntelligentProduct();
-  const { mutate: adjustStock } = useAdjustStock();
   const { mutate: createTransaction } = useCreateTransaction();
   const { mutate: returnProduct } = useReturnProduct();
 
@@ -27,7 +26,7 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
       name: data.name?.trim(),
       price: parseFloat(data.price),
       cost: parseFloat(data.cost),
-      stock: parseInt(data.stock) || 0,
+      stock: 1, // Siempre 1 en el nuevo modelo
     };
 
     if (data.size?.trim()) payload.size = data.size.trim();
@@ -52,19 +51,6 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
           ? serverError.message.join('\n') 
           : serverError?.message || error.message;
         Alert.alert('Error de Validación', String(errorMessage));
-      }
-    });
-  };
-
-  const handleStockAdjustment = (product, data) => {
-    adjustStock({ id: product.id, data }, {
-      onSuccess: () => {
-        Alert.alert('Éxito', 'Inventario actualizado correctamente');
-        closeStockModal();
-      },
-      onError: (error) => {
-        const serverError = error?.response?.data;
-        Alert.alert('Error', String(serverError?.message || 'No se pudo realizar el ajuste'));
       }
     });
   };
@@ -147,7 +133,6 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
   return {
     isSaving,
     handleSaveProduct,
-    handleStockAdjustment,
     handleReturn,
     handleSelectClient,
     handleSelectPickerItem,

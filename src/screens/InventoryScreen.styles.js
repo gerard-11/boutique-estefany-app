@@ -58,6 +58,11 @@ export const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginBottom: 2,
   },
+  assignedText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
   priceContainer: {
     alignItems: 'flex-end',
     justifyContent: 'center',

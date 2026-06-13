@@ -70,8 +70,7 @@ export const CircularActionMenu = ({ product, onReturn }) => {
     actions.push(
       { type: 'SALE', icon: 'cart-arrow-down', label: 'Venta', color: theme.colors.primary },
       { type: 'PRESTAMO', icon: 'hand-heart', label: 'Prestar', color: '#339af0' },
-      { type: 'APARTADO', icon: 'bookmark-check', label: 'Apartar', color: '#fcc419' },
-      { type: 'STOCK', icon: 'plus-box-multiple', label: 'Stock', color: theme.colors.primary }
+      { type: 'APARTADO', icon: 'bookmark-check', label: 'Apartar', color: '#fcc419' }
     );
   } else if (isApartado) {
     actions.push(

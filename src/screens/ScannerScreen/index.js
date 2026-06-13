@@ -30,7 +30,6 @@ import { theme } from '../../theme';
 import { ProductFound } from './components/ProductFound';
 import { NewProductForm } from './components/NewProductForm';
 import { ScannerPickers } from './components/ScannerPickers';
-import { StockAdjustmentModal } from './components/StockAdjustmentModal';
 
 export default function ScannerScreen({ navigation }) {
   // --- Zustand Store ---
@@ -203,13 +202,6 @@ export default function ScannerScreen({ navigation }) {
             )}
           </View>
         )}
-
-        <StockAdjustmentModal 
-          visible={showStockModal}
-          product={product}
-          onClose={() => useScannerStore.getState().closeStockModal()}
-          onConfirm={(data) => handleStockAdjustment(product, data)}
-        />
 
         <ScannerPickers 
           picker={picker}
