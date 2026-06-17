@@ -12,15 +12,12 @@ const firebaseConfig = {
   appId: "1:849272336378:web:b480a2f8d6e7cb2e943e43"
 };
 
-console.log('FirebaseConfig: Inicializando con configuración real...');
-
 let auth;
 try {
   const app = initializeApp(firebaseConfig);
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(ReactNativeAsyncStorage)
   });
-  console.log('FirebaseConfig: SDK inicializado con éxito.');
 } catch (error) {
   console.error('FirebaseConfig: Error crítico en inicialización:', error);
 }

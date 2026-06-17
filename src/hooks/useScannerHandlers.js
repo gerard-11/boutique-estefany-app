@@ -84,7 +84,6 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
       productBarcodes: [String(barcode)],
     };
 
-    console.log('Transaction payload:', payload);
 
     createTransaction(payload, {
       onSuccess: () => {
@@ -94,11 +93,6 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
       },
       onError: (error) => {
         const serverError = error?.response?.data;
-        console.log('Transaction error:', {
-          status: error?.response?.status,
-          serverError,
-          payload,
-        });
         const errorMessage = Array.isArray(serverError?.message)
           ? serverError.message.join('\n')
           : serverError?.message || error.message || 'No se pudo completar la transacción';
