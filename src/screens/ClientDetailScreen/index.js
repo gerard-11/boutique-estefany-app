@@ -28,11 +28,11 @@ export default function ClientDetailScreen({ route, navigation }) {
     isRefetching: isRefetchingProfile 
   } = useClientEnrichedProfile(clientId);
 
-
   const { 
     data: wishlist, 
     isLoading: isWishlistLoading 
   } = useWishlist(clientId);
+
   const allMovements = useMemo(() => {
     if (!profile) return [];
     const txs = profile.transactions || [];

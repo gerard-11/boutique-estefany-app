@@ -68,11 +68,25 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
   const handleSelectClient = (client) => {
     if (isCreatingTransaction) return;
 
-    createTransaction({
+    if (!transactionType) {
+      Alert.alert('Error', 'Selecciona un tipo de transacción antes de elegir cliente.');
+      return;
+    }
+
+    if (!barcode) {
+      Alert.alert('Error', 'No se encontró el código de barras del producto escaneado.');
+      return;
+    }
+
+    const payload = {
       userId: client.id,
       type: transactionType,
-      productBarcodes: [barcode]
-    }, {
+      productBarcodes: [String(barcode)],
+    };
+
+    console.log('Transaction payload:', payload);
+
+    createTransaction(payload, {
       onSuccess: () => {
         closeClientPicker();
         Alert.alert('Éxito', 'Transacción completada');
@@ -80,6 +94,11 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
       },
       onError: (error) => {
         const serverError = error?.response?.data;
+        console.log('Transaction error:', {
+          status: error?.response?.status,
+          serverError,
+          payload,
+        });
         const errorMessage = Array.isArray(serverError?.message)
           ? serverError.message.join('\n')
           : serverError?.message || error.message || 'No se pudo completar la transacción';

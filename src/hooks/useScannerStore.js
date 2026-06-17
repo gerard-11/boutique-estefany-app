@@ -5,7 +5,7 @@ const initialState = {
   barcode: null,
   scanned: false,
   showClientPicker: false,
-  transactionType: null, // 'SALE', 'PRESTAMO', 'APARTADO', 'CREDITO_SEMANAL'
+  transactionType: null, // 'CASH', 'LOAN', 'LAYAWAY', 'WEEKLY_CREDIT'
   userSearch: '',
   picker: {
     visible: false,

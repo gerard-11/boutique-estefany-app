@@ -9,6 +9,7 @@ import Animated, {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { styles } from './CircularActionMenu.styles';
 import { theme } from '../../../theme';
+import { TRANSACTION_TYPES, TRANSACTION_TYPE_SHORT_LABELS } from '../../../constants/transactionTypes';
 
 const RADIUS = 110;
 
@@ -68,14 +69,14 @@ export const CircularActionMenu = ({ product, onReturn, onSelectAction }) => {
 
   if (isAvailable) {
     actions.push(
-      { type: 'SALE', icon: 'cart-arrow-down', label: 'Venta', color: theme.colors.primary },
-      { type: 'PRESTAMO', icon: 'hand-heart', label: 'Prestar', color: '#339af0' },
-      { type: 'APARTADO', icon: 'bookmark-check', label: 'Apartar', color: '#fcc419' },
-      { type: 'CREDITO_SEMANAL', icon: 'calendar-check', label: 'Crédito', color: '#e64980' }
+      { type: TRANSACTION_TYPES.CASH, icon: 'cart-arrow-down', label: TRANSACTION_TYPE_SHORT_LABELS[TRANSACTION_TYPES.CASH], color: theme.colors.primary },
+      { type: TRANSACTION_TYPES.LOAN, icon: 'hand-heart', label: TRANSACTION_TYPE_SHORT_LABELS[TRANSACTION_TYPES.LOAN], color: '#339af0' },
+      { type: TRANSACTION_TYPES.LAYAWAY, icon: 'bookmark-check', label: TRANSACTION_TYPE_SHORT_LABELS[TRANSACTION_TYPES.LAYAWAY], color: '#fcc419' },
+      { type: TRANSACTION_TYPES.WEEKLY_CREDIT, icon: 'calendar-check', label: TRANSACTION_TYPE_SHORT_LABELS[TRANSACTION_TYPES.WEEKLY_CREDIT], color: '#e64980' }
     );
   } else if (isApartado) {
     actions.push(
-      { type: 'SALE', icon: 'cash-check', label: 'Vender', color: theme.colors.primary },
+      { type: TRANSACTION_TYPES.CASH, icon: 'cash-check', label: 'Vender', color: theme.colors.primary },
       { type: 'RETURN', icon: 'lock-open-variant', label: 'Liberar', color: '#fa5252' }
     );
   } else if (isPrestamo) {

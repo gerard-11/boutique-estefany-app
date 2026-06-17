@@ -3,17 +3,20 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { styles } from '../ClientDetailScreen.styles';
 import { theme } from '../../../theme';
+import { TRANSACTION_TYPES, TRANSACTION_TYPE_LABELS } from '../../../constants/transactionTypes';
 
 const TRANSACTION_CONFIG = {
-  CONTADO: { icon: 'cart', label: 'Venta de Contado', color: '#228be6' },
-  CREDITO_SEMANAL: { icon: 'calendar-clock', label: 'Crédito Semanal', color: '#fa5252' },
-  APARTADO: { icon: 'tag', label: 'Apartado', color: '#fd7e14' },
+  [TRANSACTION_TYPES.CASH]: { icon: 'cart', color: '#228be6' },
+  [TRANSACTION_TYPES.WEEKLY_CREDIT]: { icon: 'calendar-clock', color: '#fa5252' },
+  [TRANSACTION_TYPES.LAYAWAY]: { icon: 'tag', color: '#fd7e14' },
+  [TRANSACTION_TYPES.LOAN]: { icon: 'hand-heart', color: '#339af0' },
 };
 
 const TransactionItem = ({ item }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
-  const config = TRANSACTION_CONFIG[item.type] || { icon: 'help-circle', label: item.type, color: '#666' };
+  const config = TRANSACTION_CONFIG[item.type] || { icon: 'help-circle', color: '#666' };
+  const label = TRANSACTION_TYPE_LABELS[item.type] || item.type;
   
   // Lógica de cálculo de deuda pendiente
   const totalPaid = (item.payments || []).reduce((sum, p) => sum + p.amount, 0);
@@ -33,7 +36,7 @@ const TransactionItem = ({ item }) => {
 
         <View style={styles.txMainInfo}>
           <View style={styles.txTitleRow}>
-            <Text style={styles.txLabel}>{config.label}</Text>
+            <Text style={styles.txLabel}>{label}</Text>
             {isPendingApproval && (
               <View style={styles.waitingBadge}>
                 <Text style={styles.waitingBadgeText}>Esperando Cliente</Text>
@@ -41,7 +44,7 @@ const TransactionItem = ({ item }) => {
             )}
           </View>
           <Text style={styles.txDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
-          {item.type === 'APARTADO' && item.expiresAt && (
+          {item.type === TRANSACTION_TYPES.LAYAWAY && item.expiresAt && (
             <Text style={styles.expiresText}>Vence: {new Date(item.expiresAt).toLocaleDateString()}</Text>
           )}
         </View>
