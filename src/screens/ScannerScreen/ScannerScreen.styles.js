@@ -238,6 +238,64 @@ export const styles = StyleSheet.create({
   returnText: {
     color: '#fa5252',
   },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  categoryPickerSheet: {
+    backgroundColor: theme.colors.white,
+    padding: theme.spacing.lg,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+  },
+  clientPickerSheet: {
+    backgroundColor: theme.colors.white,
+    padding: theme.spacing.lg,
+    height: '70%',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
+  pickerTitle: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginBottom: theme.spacing.md,
+    color: theme.colors.text,
+  },
+  pickerItem: {
+    padding: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+    borderRadius: theme.borderRadius.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pickerItemSelected: {
+    backgroundColor: theme.colors.primary + '15',
+  },
+  pickerItemText: {
+    color: theme.colors.text,
+  },
+  pickerItemTextSelected: {
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
+  pickerCloseButton: {
+    paddingVertical: theme.spacing.md,
+  },
+  pickerCloseText: {
+    textAlign: 'center',
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.primary,
+  },
+  clientPickerCancelText: {
+    textAlign: 'center',
+    color: theme.colors.error || '#fa5252',
+    marginTop: theme.spacing.sm,
+  },
   // --- Estilos para Selector de Clientes ---
   clientSearchBox: {
     flexDirection: 'row',

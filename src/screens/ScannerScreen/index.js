@@ -29,7 +29,8 @@ import { theme } from '../../theme';
 // Componentes Modulares
 import { ProductFound } from './components/ProductFound';
 import { NewProductForm } from './components/NewProductForm';
-import { ScannerPickers } from './components/ScannerPickers';
+import { CategoryPickerModal } from './components/CategoryPickerModal';
+import { ClientPickerModal } from './components/ClientPickerModal';
 
 export default function ScannerScreen({ navigation }) {
   // --- Zustand Store ---
@@ -200,20 +201,23 @@ export default function ScannerScreen({ navigation }) {
           </View>
         )}
 
-        <ScannerPickers 
+        <CategoryPickerModal
           picker={picker}
           selectedId={picker.type === 'department' ? watchDeptId : watch('categoryId')}
           departmentsData={departmentsData}
           availableCategories={availableCategories}
-          showClientPicker={showClientPicker}
-          userSearch={userSearch}
-          clients={clients}
-          onClosePicker={closePicker}
+          onClose={closePicker}
           onSelectItem={(item) => handleSelectPickerItem(item, picker.type)}
-          onUpdateUserSearch={updateUserSearch}
+        />
+
+        <ClientPickerModal
+          visible={showClientPicker}
+          search={userSearch}
+          clients={clients}
+          isSelecting={isCreatingTransaction}
+          onSearchChange={updateUserSearch}
           onSelectClient={handleSelectClient}
-          onCloseClientPicker={closeClientPicker}
-          isSelectingClient={isCreatingTransaction}
+          onClose={closeClientPicker}
         />
       </SafeAreaView>
     </FormProvider>
