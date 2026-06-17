@@ -27,7 +27,8 @@ export const useScannerStore = create((set) => ({
 
 
   setTransaction: (type) => set({ 
-    transactionType: type, 
+    transactionType: type,
+    userSearch: '',
     showClientPicker: true 
   }),
 

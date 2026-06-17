@@ -17,14 +17,5 @@ export const transactionService = {
   returnProduct: async (barcode) => {
     const response = await api.post(`/transactions/barcode/${barcode}/return`);
     return response.data;
-  },
-
-  /**
-   * Busca clientes/usuarios por nombre o teléfono
-   * @param {string} search 
-   */
-  searchUsers: async (search) => {
-    const response = await api.get(`/users?search=${search}`);
-    return response.data;
   }
 };

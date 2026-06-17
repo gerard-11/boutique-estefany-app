@@ -36,14 +36,6 @@ export const useCreateIntelligentProduct = () => {
 };
 
 
-export const useSearchUsers = (search) => {
-  return useQuery({
-    queryKey: ['users', search],
-    queryFn: () => transactionService.searchUsers(search),
-    enabled: search.length > 2,
-  });
-};
-
 export const useCreateTransaction = () => {
   const queryClient = useQueryClient();
   return useMutation({

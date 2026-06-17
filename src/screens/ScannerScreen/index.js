@@ -19,9 +19,9 @@ import { useScannerStore } from '../../hooks/useScannerStore';
 import { useScannerHandlers } from '../../hooks/useScannerHandlers';
 import { 
   useProductByBarcode, 
-  useDepartmentsData, 
-  useSearchUsers 
+  useDepartmentsData 
 } from '../../hooks/useProductScanner';
+import { useClients } from '../../hooks/useClients';
 import { productSchema } from '../../services/productService';
 import { styles } from './ScannerScreen.styles';
 import { theme } from '../../theme';
@@ -36,14 +36,13 @@ export default function ScannerScreen({ navigation }) {
   const {
     step, barcode, scanned, picker, showClientPicker, 
     userSearch, handleBarcodeScanned, reset: resetStore,
-    closePicker, openPicker, closeClientPicker, updateUserSearch
+    closePicker, openPicker, closeClientPicker, updateUserSearch, setTransaction
   } = useScannerStore();
 
   // --- Data Hooks ---
   const { data: product, isLoading: isVerifying } = useProductByBarcode(barcode);
   const { data: departmentsData } = useDepartmentsData();
-  const { data: clients } = useSearchUsers(userSearch);
-
+  const { data: clients } = useClients(userSearch, '');
   // --- React Hook Form ---
 
   const methods = useForm({
@@ -98,7 +97,6 @@ export default function ScannerScreen({ navigation }) {
         return;
       }
 
-      // BLOQUEO SENSIBLE: Si hay un código escaneado O si el formulario tiene cambios (como el nombre)
       const hasBarcode = !!barcode;
       const hasFormContent = isDirty; // isDirty de RHF detecta si el usuario escribió en el nombre u otros campos
 
@@ -183,6 +181,7 @@ export default function ScannerScreen({ navigation }) {
                   product={product}
                   onReturn={handleReturn}
                   onReset={() => { resetStore(); resetForm(); }}
+                  onSelectAction={setTransaction}
                 />
               ) : (
                 <NewProductForm 

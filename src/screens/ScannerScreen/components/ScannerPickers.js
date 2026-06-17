@@ -85,7 +85,7 @@ export const ScannerPickers = ({
                     onPress={() => onSelectClient(item)}
                     disabled={isSelectingClient}
                   >
-                    <Text>{item.name}</Text>
+                    <Text>{item.firstName} {item.lastName}</Text>
                     {isSelectingClient && <ActivityIndicator size="small" color={theme.colors.primary} />}
                   </TouchableOpacity>
                 )}

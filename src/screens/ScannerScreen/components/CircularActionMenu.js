@@ -7,7 +7,6 @@ import Animated, {
   interpolate
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useScannerStore } from '../../../hooks/useScannerStore';
 import { styles } from './CircularActionMenu.styles';
 import { theme } from '../../../theme';
 
@@ -51,9 +50,8 @@ const AnimatedButton = ({ index, total, expansion, action, onPress }) => {
   );
 };
 
-export const CircularActionMenu = ({ product, onReturn }) => {
+export const CircularActionMenu = ({ product, onReturn, onSelectAction }) => {
   const expansion = useSharedValue(0);
-  const { setTransaction } = useScannerStore();
   
   const status = (product?.inventoryStatus?.status || product?.status || 'AVAILABLE').toUpperCase();
   const isAvailable = status === 'AVAILABLE';
@@ -87,8 +85,12 @@ export const CircularActionMenu = ({ product, onReturn }) => {
   }
 
   const handleAction = (action) => {
-    if (action.type === 'RETURN') onReturn();
-    else setTransaction(action.type);
+    if (action.type === 'RETURN') {
+      onReturn();
+      return;
+    }
+
+    onSelectAction(action.type);
   };
 
   const centerIconStyle = useAnimatedStyle(() => ({
