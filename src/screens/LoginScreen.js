@@ -33,11 +33,12 @@ export default function LoginScreen() {
     GOOGLE_WEB_CLIENT_ID,
     GOOGLE_ANDROID_CLIENT_ID,
     GOOGLE_IOS_CLIENT_ID,
+    authError,
   } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [adminMode, setAdminMode] = useState(false);
   const [email, setEmail] = useState('admin@test.com');
-  const [password, setPassword] = useState('Admin123!');
+  const [password, setPassword] = useState('12345678');
 
   const googleWebClientId = getConfiguredClientId(GOOGLE_WEB_CLIENT_ID);
   const googleAndroidClientId = getConfiguredClientId(GOOGLE_ANDROID_CLIENT_ID);
@@ -112,6 +113,7 @@ export default function LoginScreen() {
     } catch (error) {
       console.error('Admin Login Error:', error);
       Alert.alert('Error', 'No se pudo conectar. Verifica tus credenciales.');
+    } finally {
       setLoading(false);
     }
   };
@@ -156,6 +158,10 @@ export default function LoginScreen() {
           ) : (
             <>
               <Text style={styles.adminTitle}>Admin Testing</Text>
+
+              {authError && (
+                <Text style={styles.errorText}>{authError}</Text>
+              )}
 
               <TextInput
                 style={styles.input}

@@ -2,7 +2,6 @@ import { Alert } from 'react-native';
 import { useScannerStore } from './useScannerStore';
 import { 
   useCreateIntelligentProduct,
-  useAdjustStock,
   useCreateTransaction,
   useReturnProduct
 } from './useProductScanner';
@@ -12,12 +11,11 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
     barcode, 
     transactionType, 
     reset: resetStore,
-    closeStockModal,
     closeClientPicker
   } = useScannerStore();
 
   const { mutate: createProduct, isPending: isSaving } = useCreateIntelligentProduct();
-  const { mutate: createTransaction } = useCreateTransaction();
+  const { mutate: createTransaction, isPending: isCreatingTransaction } = useCreateTransaction();
   const { mutate: returnProduct } = useReturnProduct();
 
   const handleSaveProduct = (data) => {
@@ -68,14 +66,24 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
   };
 
   const handleSelectClient = (client) => {
+    if (isCreatingTransaction) return;
+
     createTransaction({
       userId: client.id,
       type: transactionType,
       productBarcodes: [barcode]
     }, {
       onSuccess: () => {
+        closeClientPicker();
         Alert.alert('Éxito', 'Transacción completada');
         navigation.goBack();
+      },
+      onError: (error) => {
+        const serverError = error?.response?.data;
+        const errorMessage = Array.isArray(serverError?.message)
+          ? serverError.message.join('\n')
+          : serverError?.message || error.message || 'No se pudo completar la transacción';
+        Alert.alert('Error', String(errorMessage));
       }
     });
   };
@@ -132,6 +140,7 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
 
   return {
     isSaving,
+    isCreatingTransaction,
     handleSaveProduct,
     handleReturn,
     handleSelectClient,

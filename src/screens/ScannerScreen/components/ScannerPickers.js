@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, FlatList, TouchableOpacity, Text, TextInput } from 'react-native';
+import { ActivityIndicator, Modal, View, FlatList, TouchableOpacity, Text, TextInput } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { styles } from '../ScannerScreen.styles';
 import { theme } from '../../../theme';
@@ -16,7 +16,8 @@ export const ScannerPickers = ({
   onSelectItem, 
   onUpdateUserSearch, 
   onSelectClient, 
-  onCloseClientPicker 
+  onCloseClientPicker,
+  isSelectingClient = false,
 }) => {
   return (
     <>
@@ -79,13 +80,18 @@ export const ScannerPickers = ({
               <FlatList
                 data={clients}
                 renderItem={({ item }) => (
-                  <TouchableOpacity style={styles.clientItem} onPress={() => onSelectClient(item)}>
+                  <TouchableOpacity
+                    style={styles.clientItem}
+                    onPress={() => onSelectClient(item)}
+                    disabled={isSelectingClient}
+                  >
                     <Text>{item.name}</Text>
+                    {isSelectingClient && <ActivityIndicator size="small" color={theme.colors.primary} />}
                   </TouchableOpacity>
                 )}
                 keyExtractor={item => item.id.toString()}
               />
-              <TouchableOpacity onPress={onCloseClientPicker}>
+              <TouchableOpacity onPress={onCloseClientPicker} disabled={isSelectingClient}>
                  <Text style={{ textAlign: 'center', color: 'red', marginTop: 10 }}>Cancelar</Text>
               </TouchableOpacity>
            </View>

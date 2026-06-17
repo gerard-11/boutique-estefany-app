@@ -5,8 +5,7 @@ const initialState = {
   barcode: null,
   scanned: false,
   showClientPicker: false,
-  showStockModal: false,
-  transactionType: null, // 'SALE', 'PRESTAMO', 'APARTADO'
+  transactionType: null, // 'SALE', 'PRESTAMO', 'APARTADO', 'CREDITO_SEMANAL'
   userSearch: '',
   picker: {
     visible: false,
@@ -26,8 +25,6 @@ export const useScannerStore = create((set) => ({
     step: 'VERIFYING' 
   }),
 
-  openStockModal: () => set({ showStockModal: true }),
-  closeStockModal: () => set({ showStockModal: false }),
 
   setTransaction: (type) => set({ 
     transactionType: type, 

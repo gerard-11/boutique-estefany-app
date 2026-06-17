@@ -53,12 +53,14 @@ const AnimatedButton = ({ index, total, expansion, action, onPress }) => {
 
 export const CircularActionMenu = ({ product, onReturn }) => {
   const expansion = useSharedValue(0);
-  const { openStockModal, setTransaction } = useScannerStore();
+  const { setTransaction } = useScannerStore();
   
-  const status = product?.inventoryStatus?.status || 'AVAILABLE';
+  const status = (product?.inventoryStatus?.status || product?.status || 'AVAILABLE').toUpperCase();
   const isAvailable = status === 'AVAILABLE';
   const isApartado = status === 'APARTADO';
   const isPrestamo = status === 'PRESTAMO';
+  const isCreditoSemanal = status === 'CREDITO_SEMANAL';
+  const isSold = status === 'SOLD';
 
   useEffect(() => {
     expansion.value = withSpring(1, { damping: 12, stiffness: 90 });
@@ -70,7 +72,8 @@ export const CircularActionMenu = ({ product, onReturn }) => {
     actions.push(
       { type: 'SALE', icon: 'cart-arrow-down', label: 'Venta', color: theme.colors.primary },
       { type: 'PRESTAMO', icon: 'hand-heart', label: 'Prestar', color: '#339af0' },
-      { type: 'APARTADO', icon: 'bookmark-check', label: 'Apartar', color: '#fcc419' }
+      { type: 'APARTADO', icon: 'bookmark-check', label: 'Apartar', color: '#fcc419' },
+      { type: 'CREDITO_SEMANAL', icon: 'calendar-check', label: 'Crédito', color: '#e64980' }
     );
   } else if (isApartado) {
     actions.push(
@@ -84,8 +87,7 @@ export const CircularActionMenu = ({ product, onReturn }) => {
   }
 
   const handleAction = (action) => {
-    if (action.type === 'STOCK') openStockModal();
-    else if (action.type === 'RETURN') onReturn();
+    if (action.type === 'RETURN') onReturn();
     else setTransaction(action.type);
   };
 
@@ -95,11 +97,13 @@ export const CircularActionMenu = ({ product, onReturn }) => {
 
   return (
     <View style={styles.container}>
-      {(isApartado || isPrestamo) && (
+      {(isApartado || isPrestamo || isCreditoSemanal || isSold) && (
         <View style={styles.statusBanner}>
           <MaterialCommunityIcons name="alert-circle" color="#fd7e14" size={20} />
           <Text style={styles.statusText}>
-            {`${isApartado ? 'Apartado por: ' : 'Prestado a: '}${product?.inventoryStatus?.assignedTo?.name || 'Cliente'}`}
+            {isSold
+              ? `Producto vendido${product?.inventoryStatus?.assignedTo?.name ? ` a: ${product.inventoryStatus.assignedTo.name}` : ''}`
+              : `${isApartado ? 'Apartado por: ' : isCreditoSemanal ? 'Crédito semanal de: ' : 'Prestado a: '}${product?.inventoryStatus?.assignedTo?.name || 'Cliente'}`}
           </Text>
         </View>
       )}
@@ -118,6 +122,12 @@ export const CircularActionMenu = ({ product, onReturn }) => {
           onPress={() => handleAction(action)}
         />
       ))}
+
+      {actions.length === 0 && (
+        <View style={styles.emptyActions}>
+          <Text style={styles.emptyActionsText}>Sin acciones disponibles</Text>
+        </View>
+      )}
     </View>
   );
 };

@@ -2,8 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getProductByBarcode, 
   getDepartments, 
-  createProduct,
-  adjustStock
+  createProduct
 } from '../services/productService';
 import { transactionService } from '../services/transactionService';
 
@@ -36,17 +35,6 @@ export const useCreateIntelligentProduct = () => {
   });
 };
 
-export const useAdjustStock = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }) => adjustStock(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['product'] });
-       queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
-    },
-  });
-};
 
 export const useSearchUsers = (search) => {
   return useQuery({

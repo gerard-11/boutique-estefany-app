@@ -36,11 +36,6 @@ export default function InventoryScreen() {
   const { data: products, isLoading, isError, refetch, isRefetching } = useProducts();
   const [search, setSearch] = useState('');
 
- console.log('Productos crudos:', products);
-console.log('Productos en inventario:', products?.some(i=> {
-i.name === 'Sudadera Nike Sport'
-console.log('Producto encontrado:', i);
-}));
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];

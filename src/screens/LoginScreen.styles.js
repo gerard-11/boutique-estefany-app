@@ -100,6 +100,12 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: theme.spacing.md,
     textDecorationLine: 'underline',
+  },
+  errorText: {
+    color: theme.colors.error || '#fa5252',
+    fontSize: theme.typography.fontSize.sm,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
   }
 });
 

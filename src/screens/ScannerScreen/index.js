@@ -35,7 +35,7 @@ export default function ScannerScreen({ navigation }) {
   // --- Zustand Store ---
   const {
     step, barcode, scanned, picker, showClientPicker, 
-    userSearch, showStockModal, handleBarcodeScanned, reset: resetStore,
+    userSearch, handleBarcodeScanned, reset: resetStore,
     closePicker, openPicker, closeClientPicker, updateUserSearch
   } = useScannerStore();
 
@@ -60,8 +60,8 @@ export default function ScannerScreen({ navigation }) {
   // --- Logic Handlers Hook ---
   const {
     isSaving,
+    isCreatingTransaction,
     handleSaveProduct,
-    handleStockAdjustment,
     handleReturn,
     handleSelectClient,
     handleSelectPickerItem,
@@ -129,8 +129,6 @@ export default function ScannerScreen({ navigation }) {
           return true;
         }
         
-        if (showStockModal) return false; 
-
         const hasBarcode = !!barcode;
         const hasFormContent = isDirty;
 
@@ -143,7 +141,7 @@ export default function ScannerScreen({ navigation }) {
 
       const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
       return () => backHandler.remove();
-    }, [navigation, isDirty, barcode, showStockModal])
+    }, [navigation, isDirty, barcode])
   );
 
   return (
@@ -216,6 +214,7 @@ export default function ScannerScreen({ navigation }) {
           onUpdateUserSearch={updateUserSearch}
           onSelectClient={handleSelectClient}
           onCloseClientPicker={closeClientPicker}
+          isSelectingClient={isCreatingTransaction}
         />
       </SafeAreaView>
     </FormProvider>

@@ -66,5 +66,18 @@ export const styles = StyleSheet.create({
     color: '#d9480f',
     fontWeight: '600',
     fontSize: 12,
+  },
+  emptyActions: {
+    position: 'absolute',
+    bottom: 35,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#f1f3f5',
+  },
+  emptyActionsText: {
+    color: theme.colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
   }
 });
