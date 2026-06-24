@@ -77,7 +77,7 @@ export default function ClientDetailScreen({ route, navigation }) {
       >
         <ProfileHeader 
           user={profile} 
-          onRegisterPayment={() => {/* TODO: Navegar a registro de pago */}} 
+          onRegisterPayment={() => navigation.navigate('Payments', { clientId })} 
         />
 
         <FinancialCards 

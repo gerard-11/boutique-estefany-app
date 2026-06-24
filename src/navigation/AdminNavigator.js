@@ -6,6 +6,7 @@ import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import InventoryScreen from '../screens/InventoryScreen';
 import ClientsScreen from '../screens/ClientsScreen';
 import ClientDetailScreen from '../screens/ClientDetailScreen';
+import PaymentsScreen from '../screens/PaymentsScreen';
 import ScannerScreen from '../screens/ScannerScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 
@@ -61,6 +62,16 @@ export default function AdminNavigator() {
           title: 'Inventario',
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="package-variant-closed" color={color} size={size} />
+          )
+        }}
+      />
+      <Drawer.Screen
+        name="Payments"
+        component={PaymentsScreen}
+        options={{
+          title: 'Pagos',
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="cash-check" color={color} size={size} />
           )
         }}
       />
