@@ -12,6 +12,13 @@ import { theme } from '../../../theme';
 import { TRANSACTION_TYPES, TRANSACTION_TYPE_SHORT_LABELS } from '../../../constants/transactionTypes';
 
 const RADIUS = 110;
+const STATUS_ALIASES = {
+  LAYAWAY: ['LAYAWAY', 'APARTADO'],
+  LOAN: ['LOAN', 'PRESTAMO'],
+  WEEKLY_CREDIT: ['WEEKLY_CREDIT', 'CREDITO_SEMANAL'],
+};
+
+const hasStatus = (status, aliases) => aliases.includes(status);
 
 const AnimatedButton = ({ index, total, expansion, action, onPress }) => {
   const angle = total === 1 
@@ -56,9 +63,9 @@ export const CircularActionMenu = ({ product, onReturn, onSelectAction }) => {
   
   const status = (product?.inventoryStatus?.status || product?.status || 'AVAILABLE').toUpperCase();
   const isAvailable = status === 'AVAILABLE';
-  const isApartado = status === 'APARTADO';
-  const isPrestamo = status === 'PRESTAMO';
-  const isCreditoSemanal = status === 'CREDITO_SEMANAL';
+  const isApartado = hasStatus(status, STATUS_ALIASES.LAYAWAY);
+  const isPrestamo = hasStatus(status, STATUS_ALIASES.LOAN);
+  const isCreditoSemanal = hasStatus(status, STATUS_ALIASES.WEEKLY_CREDIT);
   const isSold = status === 'SOLD';
 
   useEffect(() => {
