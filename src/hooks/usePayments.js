@@ -9,9 +9,9 @@ export const useCreatePayment = () => {
 
   return useMutation({
     mutationFn: createPayment,
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      queryClient.invalidateQueries({ queryKey: ['clientProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['clientProfile', variables.userId] });
       queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
     },
   });

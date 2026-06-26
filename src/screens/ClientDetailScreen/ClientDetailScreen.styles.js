@@ -373,6 +373,111 @@ export const styles = StyleSheet.create({
     color: theme.colors.text,
   },
 
+  // Payment Modal
+  paymentModalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.35)",
+  },
+  paymentModalCard: {
+    backgroundColor: theme.colors.white,
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  paymentModalTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: theme.colors.text,
+  },
+  paymentModalSubtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+  },
+  paymentSummaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 18,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f1f3f5",
+  },
+  paymentSummaryLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: theme.colors.textSecondary,
+  },
+  paymentSummaryValue: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: theme.colors.text,
+  },
+  paymentInputLabel: {
+    marginTop: 18,
+    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: "800",
+    color: theme.colors.text,
+  },
+  paymentInputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 12,
+    backgroundColor: "#fafbfc",
+    paddingHorizontal: 14,
+  },
+  paymentCurrencyPrefix: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: theme.colors.textSecondary,
+    marginRight: 8,
+  },
+  paymentInput: {
+    flex: 1,
+    minHeight: 54,
+    fontSize: 24,
+    fontWeight: "800",
+    color: theme.colors.text,
+  },
+  paymentActions: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 22,
+  },
+  paymentCancelButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: "#f1f3f5",
+  },
+  paymentCancelText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: theme.colors.textSecondary,
+  },
+  paymentSubmitButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary,
+  },
+  paymentSubmitButtonDisabled: {
+    opacity: 0.65,
+  },
+  paymentSubmitText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: theme.colors.white,
+  },
+
   // Common
   sectionTitle: {
     fontSize: 12,
