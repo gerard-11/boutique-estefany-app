@@ -6,8 +6,13 @@ import { styles } from '../ScannerScreen.styles';
 const STATUS_MAP = {
   AVAILABLE: { label: 'Disponible', backgroundColor: '#ebfbee', color: '#40c057' },
   LAYAWAY: { label: 'Apartado', backgroundColor: '#fff9db', color: '#f08c00' },
+  APARTADO: { label: 'Apartado', backgroundColor: '#fff9db', color: '#f08c00' },
+  RESERVED: { label: 'Apartado', backgroundColor: '#fff9db', color: '#f08c00' },
+  RESERVADO: { label: 'Apartado', backgroundColor: '#fff9db', color: '#f08c00' },
   LOAN: { label: 'Prestado', backgroundColor: '#e7f5ff', color: '#1c7ed6' },
+  PRESTAMO: { label: 'Prestado', backgroundColor: '#e7f5ff', color: '#1c7ed6' },
   WEEKLY_CREDIT: { label: 'En crédito', backgroundColor: '#fff0f6', color: '#d6336c' },
+  CREDITO_SEMANAL: { label: 'En crédito', backgroundColor: '#fff0f6', color: '#d6336c' },
   SOLD: { label: 'Vendido', backgroundColor: '#fff5f5', color: '#fa5252' },
 };
 

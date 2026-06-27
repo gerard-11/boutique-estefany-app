@@ -13,7 +13,7 @@ import { TRANSACTION_TYPES, TRANSACTION_TYPE_SHORT_LABELS } from '../../../const
 
 const RADIUS = 110;
 const STATUS_ALIASES = {
-  LAYAWAY: ['LAYAWAY', 'APARTADO'],
+  LAYAWAY: ['LAYAWAY', 'APARTADO', 'RESERVED', 'RESERVADO'],
   LOAN: ['LOAN', 'PRESTAMO'],
   WEEKLY_CREDIT: ['WEEKLY_CREDIT', 'CREDITO_SEMANAL'],
 };
@@ -83,7 +83,8 @@ export const CircularActionMenu = ({ product, onReturn, onSelectAction }) => {
     );
   } else if (isApartado) {
     actions.push(
-      { type: TRANSACTION_TYPES.CASH, icon: 'cash-check', label: 'Vender', color: theme.colors.primary },
+      { type: TRANSACTION_TYPES.CASH, icon: 'cash-check', label: 'Contado', color: theme.colors.primary },
+      { type: TRANSACTION_TYPES.WEEKLY_CREDIT, icon: 'calendar-check', label: 'Crédito', color: '#e64980' },
       { type: 'RETURN', icon: 'lock-open-variant', label: 'Liberar', color: '#fa5252' }
     );
   } else if (isPrestamo) {

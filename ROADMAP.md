@@ -239,3 +239,32 @@ Notas de validacion:
 - Firebase password login: OK para `admin@test.com`.
 - `GET /auth/me` con token Firebase: OK, `role: ADMIN`.
 
+
+## 8. Vista de cliente final
+
+Cambio realizado:
+
+- Se analizo que `ClientDetailScreen` ya puede reutilizarse como base para el rol `CLIENT`.
+- Se definio que el cliente final solo debe ver deudas e historial de compras/pagos.
+
+Archivos relacionados:
+
+- `src/navigation/AppNavigator.js`
+- `src/screens/ClientDetailScreen/index.js`
+- `src/screens/ClientDetailScreen/components/ProfileHeader.js`
+
+Estado actual:
+
+- En espera.
+
+Siguientes pasos:
+
+- Crear navegacion para usuarios con `profile.role === 'CLIENT'`.
+- Resolver el `clientId` desde `AuthContext.profile` cuando no venga por params.
+- Ocultar acciones administrativas como registrar pagos.
+- Ocultar la tab de intereses para cliente final.
+
+Notas de validacion:
+
+- Validar login con usuario `CLIENT`.
+- Confirmar que el backend permite `GET /users/clients/:id/profile` solo para admin o el propio cliente.

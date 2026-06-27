@@ -17,8 +17,13 @@ import { theme } from '../theme';
 
 const STATUS_MAP = {
   AVAILABLE: { color: '#40c057', label: 'Disponible', order: 1 },
+  LAYAWAY: { color: '#fcc419', label: 'Apartado', order: 2 },
   APARTADO: { color: '#fcc419', label: 'Apartado', order: 2 },
+  RESERVED: { color: '#fcc419', label: 'Apartado', order: 2 },
+  RESERVADO: { color: '#fcc419', label: 'Apartado', order: 2 },
+  LOAN: { color: '#339af0', label: 'Prestado', order: 3 },
   PRESTAMO: { color: '#339af0', label: 'Prestado', order: 3 },
+  WEEKLY_CREDIT: { color: '#e64980', label: 'En Crédito', order: 4 },
   CREDITO_SEMANAL: { color: '#e64980', label: 'En Crédito', order: 4 },
   SOLD: { color: '#fa5252', label: 'Vendido', order: 5 },
 };
@@ -74,7 +79,7 @@ export default function InventoryScreen() {
           </Text>
           {assignedTo && (
             <Text style={[styles.assignedText, { color: statusConfig.color }]}>
-              {invStatus === 'PRESTAMO' ? 'Prestado a: ' : (invStatus === 'SOLD' ? 'Vendido a: ' : 'Asignado a: ')}{assignedTo}
+              {['PRESTAMO', 'LOAN'].includes(invStatus) ? 'Prestado a: ' : (invStatus === 'SOLD' ? 'Vendido a: ' : 'Asignado a: ')}{assignedTo}
             </Text>
           )}
         </View>

@@ -1,15 +1,15 @@
 import { Alert } from 'react-native';
 import { useScannerStore } from './useScannerStore';
-import { 
+import {
   useCreateIntelligentProduct,
   useCreateTransaction,
   useReturnProduct
 } from './useProductScanner';
 
 export const useScannerHandlers = (navigation, resetForm, setValue) => {
-  const { 
-    barcode, 
-    transactionType, 
+  const {
+    barcode,
+    transactionType,
     reset: resetStore,
     closeClientPicker
   } = useScannerStore();
@@ -45,8 +45,8 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
       },
       onError: (error) => {
         const serverError = error?.response?.data;
-        const errorMessage = Array.isArray(serverError?.message) 
-          ? serverError.message.join('\n') 
+        const errorMessage = Array.isArray(serverError?.message)
+          ? serverError.message.join('\n')
           : serverError?.message || error.message;
         Alert.alert('Error de Validación', String(errorMessage));
       }
@@ -56,19 +56,19 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
   const handleReturn = () => {
     Alert.alert('Devolución', '¿Liberar esta prenda?', [
       { text: 'No', style: 'cancel' },
-      { 
-        text: 'Sí', 
-        onPress: () => returnProduct(barcode, { 
-          onSuccess: () => resetStore() 
-        }) 
+      {
+        text: 'Sí',
+        onPress: () => returnProduct(barcode, {
+          onSuccess: () => resetStore()
+        })
       }
     ]);
   };
 
-  const handleSelectClient = (client) => {
+  const handleCreateTransactionForClient = (client, type, options = {}) => {
     if (isCreatingTransaction) return;
 
-    if (!transactionType) {
+    if (!type) {
       Alert.alert('Error', 'Selecciona un tipo de transacción antes de elegir cliente.');
       return;
     }
@@ -78,12 +78,22 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
       return;
     }
 
+    const userId = client?.id || client?.userId || client?.clientId;
+    if (!userId) {
+      Alert.alert('Cliente no disponible', 'No se encontró el cliente asignado para esta transacción.');
+      return;
+    }
+
     const payload = {
-      userId: client.id,
-      type: transactionType,
+      userId,
+      type,
       productBarcodes: [String(barcode)],
     };
 
+    const discountPercentage = Number(options.discountPercentage || 0);
+    if (Number.isFinite(discountPercentage) && discountPercentage > 0) {
+      payload.discountPercentage = discountPercentage;
+    }
 
     createTransaction(payload, {
       onSuccess: () => {
@@ -99,6 +109,10 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
         Alert.alert('Error', String(errorMessage));
       }
     });
+  };
+
+  const handleSelectClient = (client) => {
+    handleCreateTransactionForClient(client, transactionType);
   };
 
   const handleSelectPickerItem = (item, pickerType) => {
@@ -136,12 +150,12 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
         '¿Deseas cancelar el registro actual?',
         [
           { text: 'No', style: 'cancel' },
-          { 
-            text: 'Sí', 
+          {
+            text: 'Sí',
             onPress: () => {
               resetStore();
               resetForm();
-            } 
+            }
           }
         ]
       );
@@ -157,6 +171,7 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
     handleSaveProduct,
     handleReturn,
     handleSelectClient,
+    handleCreateTransactionForClient,
     handleSelectPickerItem,
     handleCancel
   };
