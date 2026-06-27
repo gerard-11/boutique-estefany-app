@@ -1,5 +1,7 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { DrawerActions } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
@@ -11,6 +13,42 @@ import ScannerScreen from '../screens/ScannerScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 
 const Drawer = createDrawerNavigator();
+const ClientsStack = createNativeStackNavigator();
+
+function ClientsNavigator({ navigation }) {
+  return (
+    <ClientsStack.Navigator
+      screenOptions={{
+        headerTintColor: '#d63384',
+        headerTitleStyle: { fontWeight: 'bold' },
+      }}
+    >
+      <ClientsStack.Screen
+        name="ClientsList"
+        component={ClientsScreen}
+        options={{
+          title: 'Clientes',
+          headerLeft: () => (
+            <MaterialCommunityIcons
+              name="menu"
+              size={28}
+              color="#d63384"
+              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+            />
+          ),
+        }}
+      />
+      <ClientsStack.Screen
+        name="ClientDetail"
+        component={ClientDetailScreen}
+        options={{
+          title: 'Perfil del Cliente',
+        }}
+      />
+    </ClientsStack.Navigator>
+  );
+}
+
 
 export default function AdminNavigator() {
   return (
@@ -38,21 +76,13 @@ export default function AdminNavigator() {
       />
       <Drawer.Screen 
         name="Clients" 
-        component={ClientsScreen} 
+        component={ClientsNavigator} 
         options={{
           title: 'Clientes',
+          headerShown: false,
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="account-group-outline" color={color} size={size} />
           )
-        }}
-      />
-      {/* Detalle de Cliente (Oculto del menú lateral) */}
-      <Drawer.Screen 
-        name="ClientDetail" 
-        component={ClientDetailScreen} 
-        options={{
-          title: 'Perfil del Cliente',
-          drawerItemStyle: { display: 'none' }
         }}
       />
       <Drawer.Screen 
