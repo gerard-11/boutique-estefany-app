@@ -12,7 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useClientEnrichedProfile } from '../../hooks/useClients';
+import { useClientEnrichedProfile, useClientPaymentHistory } from '../../hooks/useClients';
 import { useWishlist } from '../../hooks/useWishlist';
 import { useCreatePayment } from '../../hooks/usePayments';
 import { styles } from './ClientDetailScreen.styles';
@@ -36,6 +36,27 @@ const TABS = [
   { id: "WISHLIST", label: "Intereses" },
 ];
 
+const getMovementDate = (item) => item?.paymentDate || item?.createdAt || item?.transaction?.createdAt;
+
+const getMovementKey = (item, index) => (
+  item?.id || item?.paymentId || item?.transactionId || item?.transaction?.id || `movement-${index}`
+);
+
+const mergeMovementsById = (...groups) => {
+  const merged = new Map();
+
+  groups.flat().filter(Boolean).forEach((item, index) => {
+    const key = getMovementKey(item, index);
+    merged.set(String(key), item);
+  });
+
+  return Array.from(merged.values()).sort((a, b) => {
+    const dateA = getMovementDate(a);
+    const dateB = getMovementDate(b);
+    return new Date(dateB) - new Date(dateA);
+  });
+};
+
 export default function ClientDetailScreen({ route, navigation }) {
   const { clientId } = route.params || {};
   const [activeTab, setActiveTab] = useState('ACTIVE_DEBTS');
@@ -50,10 +71,19 @@ export default function ClientDetailScreen({ route, navigation }) {
     isRefetching: isRefetchingProfile 
   } = useClientEnrichedProfile(clientId);
 
+  const {
+    data: paymentHistory,
+    isLoading: isPaymentHistoryLoading,
+    refetch: refetchPaymentHistory,
+    isRefetching: isRefetchingPaymentHistory,
+  } = useClientPaymentHistory(clientId);
+
+  const isWishlistTabActive = activeTab === 'WISHLIST';
+
   const { 
     data: wishlist, 
     isLoading: isWishlistLoading 
-  } = useWishlist(clientId);
+  } = useWishlist(clientId, isWishlistTabActive);
 
   const { mutate: createPayment, isPending: isSavingPayment } = useCreatePayment();
 
@@ -81,6 +111,7 @@ export default function ClientDetailScreen({ route, navigation }) {
           setPaymentFormVisible(false);
           setPaymentAmount("");
           refetchProfile();
+          refetchPaymentHistory();
         },
         onError: (error) => {
           const serverError = error?.response?.data;
@@ -94,23 +125,30 @@ export default function ClientDetailScreen({ route, navigation }) {
   };
 
   const allMovements = useMemo(() => {
-    if (!profile) return [];
-    const txs = profile.transactions || [];
-    const pays = profile.payments || [];
-    return [...txs, ...pays].sort((a, b) => {
-      const dateA = a.paymentDate || a.createdAt;
-      const dateB = b.paymentDate || b.createdAt;
-      return new Date(dateB) - new Date(dateA);
-    });
-  }, [profile]);
+    const historyPayments = Array.isArray(paymentHistory?.payments) ? paymentHistory.payments : [];
+    const profilePayments = profile?.payments || [];
+    const profileTransactions = paymentHistory ? [] : profile?.transactions || [];
+
+    return mergeMovementsById(historyPayments, profilePayments, profileTransactions);
+  }, [paymentHistory, profile]);
 
   const activeDebts = useMemo(() => {
+    const activeAccounts = paymentHistory?.activeAccounts;
+    if (Array.isArray(activeAccounts)) return activeAccounts;
+
     return allMovements.filter(item => {
       const isTx = item.totalAmount !== undefined && item.type !== 'PAYMENT';
       const isNotDone = item.status !== 'COMPLETED';
       return isTx && isNotDone;
     });
-  }, [allMovements]);
+  }, [allMovements, paymentHistory]);
+
+  const shouldShowPaymentHistoryLoader = isPaymentHistoryLoading && !paymentHistory;
+
+  const handleRefresh = () => {
+    refetchProfile();
+    refetchPaymentHistory();
+  };
 
   if (isProfileLoading) {
     return (
@@ -134,8 +172,8 @@ export default function ClientDetailScreen({ route, navigation }) {
         stickyHeaderIndices={[2]} // Mantener las Tabs fijas al hacer scroll
         refreshControl={
           <RefreshControl 
-            refreshing={isRefetchingProfile} 
-            onRefresh={refetchProfile} 
+            refreshing={isRefetchingProfile || isRefetchingPaymentHistory} 
+            onRefresh={handleRefresh} 
           />
         }
       >
@@ -173,7 +211,11 @@ export default function ClientDetailScreen({ route, navigation }) {
           {activeTab === 'ACTIVE_DEBTS' && (
             <>
               <Text style={styles.sectionTitle}>Deudas Pendientes</Text>
-              {activeDebts.length === 0 ? (
+              {shouldShowPaymentHistoryLoader ? (
+                <View style={styles.emptyContainer}>
+                  <ActivityIndicator size="small" color="#d63384" />
+                </View>
+              ) : activeDebts.length === 0 ? (
                 <View style={styles.emptyContainer}>
                   <Text style={styles.emptyText}>No hay deudas activas.</Text>
                 </View>
@@ -188,9 +230,19 @@ export default function ClientDetailScreen({ route, navigation }) {
           {activeTab === 'HISTORY' && (
             <>
               <Text style={styles.sectionTitle}>Todos los movimientos</Text>
-              {allMovements.map((item, idx) => (
-                <TransactionItem key={item.id || idx} item={item} clientId={clientId} />
-              ))}
+              {shouldShowPaymentHistoryLoader ? (
+                <View style={styles.emptyContainer}>
+                  <ActivityIndicator size="small" color="#d63384" />
+                </View>
+              ) : allMovements.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>No hay pagos registrados.</Text>
+                </View>
+              ) : (
+                allMovements.map((item, idx) => (
+                  <TransactionItem key={getMovementKey(item, idx)} item={item} clientId={clientId} />
+                ))
+              )}
             </>
           )}
 

@@ -5,11 +5,12 @@ import { getClientWishlist } from '../services/wishlistService';
  * Hook para obtener la wishlist de un cliente.
  */
 
-export const useWishlist = (clientId) => {
+export const useWishlist = (clientId, enabled = true) => {
 
   return useQuery({
     queryKey: ['wishlist', clientId],
     queryFn: () =>  getClientWishlist(clientId),
-    enabled: !!clientId,
+    enabled: !!clientId && enabled,
+    staleTime: 60 * 1000,
   });
 };

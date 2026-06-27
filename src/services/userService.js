@@ -19,6 +19,11 @@ export const getEnrichedProfile = async (id) => {
   return response.data;
 };
 
+export const getClientPaymentHistory = async (id) => {
+  const response = await api.get(`/users/clients/${id}/payment-history`);
+  return response.data;
+};
+
 //se envia en data level, creditLimit y reason los 3 son opcionales
 export const updateFinancial = async (userId, data) => {
   const response = await api.patch(`/users/clients/${userId}/financial`, data);

@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getClients, 
-  getEnrichedProfile, 
+  getEnrichedProfile,
+  getClientPaymentHistory,
   updateFinancial 
 } from '../services/userService';
 
@@ -24,6 +25,18 @@ export const useClientEnrichedProfile = (userId) => {
     queryKey: ['clientProfile', userId],
     queryFn: () =>getEnrichedProfile(userId),
     enabled: !!userId,
+    staleTime: 30 * 1000,
+    placeholderData: (previousData) => previousData,
+  });
+};
+
+export const useClientPaymentHistory = (userId) => {
+  return useQuery({
+    queryKey: ['clientPaymentHistory', userId],
+    queryFn: () => getClientPaymentHistory(userId),
+    enabled: !!userId,
+    staleTime: 30 * 1000,
+    placeholderData: (previousData) => previousData,
   });
 };
 
