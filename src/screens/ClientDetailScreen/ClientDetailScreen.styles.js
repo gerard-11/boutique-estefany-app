@@ -290,10 +290,13 @@ export const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 8,
   },
+  productHistoryItem: {
+    marginBottom: 8,
+  },
   productRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   productName: {
     flex: 1,
@@ -312,6 +315,10 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.text,
     textAlign: 'right',
+  },
+  productSaleHistory: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
   },
   paymentRow: {
     flexDirection: 'row',

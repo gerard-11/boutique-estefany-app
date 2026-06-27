@@ -97,7 +97,11 @@ export default function ClientDetailScreen({ route, navigation }) {
     if (!profile) return [];
     const txs = profile.transactions || [];
     const pays = profile.payments || [];
-    return [...txs, ...pays].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return [...txs, ...pays].sort((a, b) => {
+      const dateA = a.paymentDate || a.createdAt;
+      const dateB = b.paymentDate || b.createdAt;
+      return new Date(dateB) - new Date(dateA);
+    });
   }, [profile]);
 
   const activeDebts = useMemo(() => {
@@ -175,7 +179,7 @@ export default function ClientDetailScreen({ route, navigation }) {
                 </View>
               ) : (
                 activeDebts.map((item, idx) => (
-                  <TransactionItem key={item.id || idx} item={item} />
+                  <TransactionItem key={item.id || idx} item={item} clientId={clientId} />
                 ))
               )}
             </>
@@ -185,7 +189,7 @@ export default function ClientDetailScreen({ route, navigation }) {
             <>
               <Text style={styles.sectionTitle}>Todos los movimientos</Text>
               {allMovements.map((item, idx) => (
-                <TransactionItem key={item.id || idx} item={item} />
+                <TransactionItem key={item.id || idx} item={item} clientId={clientId} />
               ))}
             </>
           )}
