@@ -25,6 +25,12 @@ export const useScannerStore = create((set) => ({
     step: 'VERIFYING' 
   }),
 
+  openManualProductForm: () => set({
+    barcode: null,
+    scanned: true,
+    step: 'NEW_FORM',
+  }),
+
 
   setTransaction: (type) => set({ 
     transactionType: type,

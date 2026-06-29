@@ -20,12 +20,13 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
 
   const handleSaveProduct = (data) => {
     const payload = {
-      barcode,
       name: data.name?.trim(),
       price: parseFloat(data.price),
       cost: parseFloat(data.cost),
       stock: 1, // Siempre 1 en el nuevo modelo
     };
+
+    if (barcode) payload.barcode = String(barcode);
 
     if (data.size?.trim()) payload.size = data.size.trim();
     if (data.sizeUnit?.trim()) payload.sizeUnit = data.sizeUnit.trim();

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useCallback, useState } from 'react';
+import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { CameraView } from 'expo-camera';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -37,6 +38,35 @@ import { ClientPickerModal } from './components/ClientPickerModal';
 
 const LAYAWAY_STATUSES = ['LAYAWAY', 'APARTADO', 'RESERVED', 'RESERVADO'];
 const SELL_TYPES = [TRANSACTION_TYPES.CASH, TRANSACTION_TYPES.WEEKLY_CREDIT];
+const BARCODE_TYPES = [
+  'ean13',
+  'ean8',
+  'upc_a',
+  'upc_e',
+  'code128',
+  'code39',
+  'code93',
+  'itf14',
+  'codabar',
+  'qr',
+];
+const NUMERIC_BARCODE_TYPES = new Set(['ean13', 'ean8', 'upc_a', 'upc_e', 'itf14']);
+const STABLE_SCAN_WINDOW_MS = 1200;
+const ACCEPTED_SCAN_COOLDOWN_MS = 1800;
+
+const normalizeBarcodeData = (value) => String(value || '')
+  .trim()
+  .replace(/[\u200B-\u200D\uFEFF]/g, '');
+
+const isReadableBarcode = (code, type) => {
+  if (!code) return false;
+
+  if (NUMERIC_BARCODE_TYPES.has(type)) {
+    return /^[0-9]{6,14}$/.test(code);
+  }
+
+  return code.length >= 4;
+};
 
 const getProductStatus = (product) => (
   product?.inventoryStatus?.status || product?.status || 'AVAILABLE'
@@ -68,12 +98,16 @@ export default function ScannerScreen({ navigation }) {
   // --- Zustand Store ---
   const {
     step, barcode, scanned, picker, showClientPicker,
-    transactionType, userSearch, handleBarcodeScanned, reset: resetStore,
+    transactionType, userSearch, handleBarcodeScanned, openManualProductForm, reset: resetStore,
     closePicker, openPicker, closeClientPicker, updateUserSearch, setTransaction
   } = useScannerStore();
 
   const [cashSale, setCashSale] = useState(null);
   const [discountInput, setDiscountInput] = useState('');
+  const [isTorchOn, setTorchOn] = useState(false);
+  const [scanFeedback, setScanFeedback] = useState('Centra el código completo dentro de la guía.');
+  const pendingScanRef = useRef({ code: null, count: 0, updatedAt: 0 });
+  const acceptedScanRef = useRef({ code: null, updatedAt: 0 });
 
   // --- Data Hooks ---
   const { data: product, isLoading: isVerifying } = useProductByBarcode(barcode);
@@ -184,6 +218,36 @@ export default function ScannerScreen({ navigation }) {
     handleSelectClient(client);
   };
 
+  const handleStableBarcodeScanned = useCallback((result) => {
+    if (scanned || step !== 'SCANNING') return;
+
+    const type = String(result?.type || '').toLowerCase();
+    const code = normalizeBarcodeData(result?.data);
+    if (!isReadableBarcode(code, type)) {
+      setScanFeedback('Acerca el código y evita cortar los extremos.');
+      return;
+    }
+
+    const now = Date.now();
+    const accepted = acceptedScanRef.current;
+    if (accepted.code === code && now - accepted.updatedAt < ACCEPTED_SCAN_COOLDOWN_MS) return;
+
+    const pending = pendingScanRef.current;
+    const isSamePending = pending.code === code && now - pending.updatedAt <= STABLE_SCAN_WINDOW_MS;
+    const nextCount = isSamePending ? pending.count + 1 : 1;
+
+    pendingScanRef.current = { code, count: nextCount, updatedAt: now };
+
+    if (nextCount < 2) {
+      setScanFeedback('Mantén el código estable un momento.');
+      return;
+    }
+
+    acceptedScanRef.current = { code, updatedAt: now };
+    setScanFeedback('Código confirmado.');
+    handleBarcodeScanned(code);
+  }, [handleBarcodeScanned, scanned, step]);
+
   // RESET TOTAL AL ENTRAR
   useFocusEffect(
     useCallback(() => {
@@ -191,6 +255,10 @@ export default function ScannerScreen({ navigation }) {
       resetForm();
       setCashSale(null);
       setDiscountInput('');
+      setTorchOn(false);
+      setScanFeedback('Centra el código completo dentro de la guía.');
+      pendingScanRef.current = { code: null, count: 0, updatedAt: 0 };
+      acceptedScanRef.current = { code: null, updatedAt: 0 };
     }, [resetForm, resetStore])
   );
 
@@ -265,27 +333,53 @@ export default function ScannerScreen({ navigation }) {
     <FormProvider {...methods}>
       <SafeAreaView style={styles.container}>
         {(step === 'SCANNING') ? (
-          <View style={{ flex: 1 }}>
+          <View style={styles.scannerStage}>
             <CameraView
               style={StyleSheet.absoluteFill}
-              onBarcodeScanned={(result) => !scanned && handleBarcodeScanned(result.data)}
+              active={step === 'SCANNING'}
+              facing="back"
+              autofocus="on"
+              zoom={0.12}
+              enableTorch={isTorchOn}
+              onBarcodeScanned={handleStableBarcodeScanned}
               barcodeScannerSettings={{
-                barcodeTypes: ['qr', 'ean13', 'ean8', 'code128', 'upc_a']
+                barcodeTypes: BARCODE_TYPES,
               }}
             />
             <View style={[styles.overlay, StyleSheet.absoluteFill]}>
               <View style={styles.unfocusedContainer} />
-              <View style={{ flexDirection: 'row' }}>
+              <View style={styles.scanWindowRow}>
                 <View style={styles.unfocusedContainer} />
-                <View style={styles.focusedContainer} />
+                <View style={styles.focusedContainer}>
+                  <View style={styles.scanLine} />
+                </View>
                 <View style={styles.unfocusedContainer} />
               </View>
               <View style={styles.unfocusedContainer}>
                 <View style={styles.bottomContainer}>
-                  <Text style={styles.instructionText}>Enfoca el código de barras</Text>
-                  <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
-                    <Text style={styles.closeButtonText}>Regresar</Text>
+                  <Text style={styles.instructionText}>{scanFeedback}</Text>
+                  <Text style={styles.scanTipText}>Escanea con suficiente iluminación y evita sombras sobre la etiqueta.</Text>
+                  <TouchableOpacity style={styles.manualProductButton} onPress={openManualProductForm}>
+                    <MaterialCommunityIcons name="barcode-off" size={20} color={theme.colors.white} />
+                    <Text style={styles.manualProductButtonText}>Crear producto sin escanear</Text>
                   </TouchableOpacity>
+                  <View style={styles.scannerActions}>
+                    <TouchableOpacity
+                      style={[styles.iconActionButton, isTorchOn && styles.iconActionButtonActive]}
+                      onPress={() => setTorchOn((current) => !current)}
+                      accessibilityRole="button"
+                      accessibilityLabel={isTorchOn ? 'Apagar linterna' : 'Encender linterna'}
+                    >
+                      <MaterialCommunityIcons
+                        name={isTorchOn ? 'flashlight' : 'flashlight-off'}
+                        size={22}
+                        color={isTorchOn ? theme.colors.white : theme.colors.text}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
+                      <Text style={styles.closeButtonText}>Regresar</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </View>

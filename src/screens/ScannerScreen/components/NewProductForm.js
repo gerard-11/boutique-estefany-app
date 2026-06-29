@@ -21,7 +21,11 @@ export const NewProductForm = ({ barcode, isSaving, onSave, onCancel, onOpenPick
       <ScrollView style={styles.resultsContainer} keyboardShouldPersistTaps="handled">
         <Text style={styles.resultTitle}>Nuevo Producto</Text>
         <View style={styles.form}>
-          <TextInput style={[styles.input, { backgroundColor: '#f0f0f0' }]} value={barcode} editable={false} />
+          <TextInput
+            style={[styles.input, styles.readOnlyInput]}
+            value={barcode || 'Código automático'}
+            editable={false}
+          />
           
           <Controller
             control={control}
