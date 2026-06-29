@@ -335,51 +335,6 @@ export const styles = StyleSheet.create({
     color: '#40c057',
   },
 
-  // Wishlist Styles
-  wishlistList: {
-    paddingHorizontal: 20,
-  },
-  wishlistItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#f1f3f5',
-  },
-  wishlistInfo: {
-    flex: 1,
-  },
-  wishlistName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-    marginBottom: 2,
-  },
-  wishlistPrice: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: theme.colors.primary,
-    marginBottom: 2,
-  },
-  wishlistDate: {
-    fontSize: 10,
-    color: theme.colors.textSecondary,
-  },
-  offerButton: {
-    backgroundColor: '#f1f3f5',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  offerButtonText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-  },
-
   // Payment Modal
   paymentModalOverlay: {
     flex: 1,

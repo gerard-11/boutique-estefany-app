@@ -13,7 +13,6 @@ import {
   Platform,
 } from 'react-native';
 import { useClientEnrichedProfile, useClientPaymentHistory } from '../../hooks/useClients';
-import { useWishlist } from '../../hooks/useWishlist';
 import { useCreatePayment } from '../../hooks/usePayments';
 import { styles } from './ClientDetailScreen.styles';
 
@@ -21,7 +20,6 @@ import { styles } from './ClientDetailScreen.styles';
 import ProfileHeader from './components/ProfileHeader';
 import FinancialCards from './components/FinancialCards';
 import TransactionItem from './components/TransactionItem';
-import WishlistTab from './components/WishlistTab';
 
 const formatCurrency = (value = 0) => String.fromCharCode(36) + Number(value || 0).toLocaleString();
 
@@ -33,7 +31,6 @@ const parsePaymentAmount = (value) => {
 const TABS = [
   { id: "ACTIVE_DEBTS", label: "Deudas" },
   { id: "HISTORY", label: "Historial" },
-  { id: "WISHLIST", label: "Intereses" },
 ];
 
 const getMovementDate = (item) => item?.paymentDate || item?.createdAt || item?.transaction?.createdAt;
@@ -77,13 +74,6 @@ export default function ClientDetailScreen({ route, navigation }) {
     refetch: refetchPaymentHistory,
     isRefetching: isRefetchingPaymentHistory,
   } = useClientPaymentHistory(clientId);
-
-  const isWishlistTabActive = activeTab === 'WISHLIST';
-
-  const { 
-    data: wishlist, 
-    isLoading: isWishlistLoading 
-  } = useWishlist(clientId, isWishlistTabActive);
 
   const { mutate: createPayment, isPending: isSavingPayment } = useCreatePayment();
 
@@ -243,13 +233,6 @@ export default function ClientDetailScreen({ route, navigation }) {
                   <TransactionItem key={getMovementKey(item, idx)} item={item} clientId={clientId} />
                 ))
               )}
-            </>
-          )}
-
-          {activeTab === 'WISHLIST' && (
-            <>
-              <Text style={styles.sectionTitle}>Intereses del Cliente</Text>
-              <WishlistTab items={wishlist} isLoading={isWishlistLoading} />
             </>
           )}
         </View>
