@@ -44,6 +44,10 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  actionableProductCard: {
+    borderWidth: 1,
+    borderColor: 'rgba(214, 51, 132, 0.22)',
+  },
   productInfo: {
     flex: 1,
   },
@@ -62,6 +66,17 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     marginTop: 4,
+  },
+  actionHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    marginTop: 6,
+  },
+  actionHintText: {
+    color: theme.colors.primary,
+    fontSize: 12,
+    fontWeight: '600',
   },
   priceContainer: {
     alignItems: 'flex-end',
@@ -96,5 +111,46 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  }
+  },
+  actionMenuOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  actionMenuSheet: {
+    backgroundColor: theme.colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl,
+  },
+  actionMenuHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  actionMenuTitleGroup: {
+    flex: 1,
+  },
+  actionMenuTitle: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
+  },
+  actionMenuSubtitle: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  actionMenuCloseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f1f3f5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
