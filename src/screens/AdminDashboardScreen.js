@@ -29,10 +29,10 @@ export default function AdminDashboardScreen({ navigation }) {
     capitalTotal: data?.totalCapital ?? 0,
     dineroVolando: data?.moneyInTheAir ?? 0,
     mermasMes: data?.mermasMes ?? 0,
-    liquidezDia: data?.liquidityToday ?? 0
+    liquidezDia: data?.todayLiquidity ?? 0
   };
 
-
+console.log('Metrics:', metrics);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
