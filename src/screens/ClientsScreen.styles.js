@@ -27,6 +27,31 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.text,
   },
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#f1f3f5',
+    borderRadius: theme.borderRadius.md,
+    padding: 4,
+    marginBottom: theme.spacing.md,
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: theme.borderRadius.sm,
+  },
+  tabButtonActive: {
+    backgroundColor: theme.colors.white,
+    ...theme.shadows.small,
+  },
+  tabText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+  },
+  tabTextActive: {
+    color: theme.colors.primary,
+  },
   filterContainer: {
     flexDirection: 'row',
     gap: 8,
@@ -85,6 +110,12 @@ export const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginTop: 2,
   },
+  clientBadgesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
   levelBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -96,6 +127,19 @@ export const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  debtBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: '#fff5f5',
+    borderWidth: 1,
+    borderColor: '#ffc9c9',
+  },
+  debtText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#fa5252',
   },
   statusIndicator: {
     width: 12,

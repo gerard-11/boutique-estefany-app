@@ -20,6 +20,16 @@ const LEVEL_COLORS = {
   BRONCE: '#d9480f',
 };
 const Level = ['ORO', 'PLATA', 'BRONCE'];
+const TABS = [
+  { id: 'ALL', label: 'Todos' },
+  { id: 'WITH_DEBT', label: 'Con deuda' },
+];
+
+const getClientDebt = (client) => Number(
+  client?.financialSummary?.currentDebt ?? client?.currentDebt ?? client?.debt ?? 0
+);
+
+const formatCurrency = (value = 0) => String.fromCharCode(36) + Number(value || 0).toLocaleString();
 
 const getStatusColor = (lastPaymentDate) => {
   if (!lastPaymentDate) return '#fa5252'; // Rojo si nunca ha pagado
@@ -37,15 +47,29 @@ const getStatusColor = (lastPaymentDate) => {
 export default function ClientsScreen({ navigation }) {
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState(null);
+  const [activeTab, setActiveTab] = useState('ALL');
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data: clients, isLoading, refetch, isRefetching } = useClients(debouncedSearch, filterLevel || '');
+  const isDebtTab = activeTab === 'WITH_DEBT';
+  const clientQueryOptions = isDebtTab ? { sortBy: 'currentDebt', order: 'desc' } : {};
+  const { data: clients, isLoading, refetch, isRefetching } = useClients(
+    debouncedSearch,
+    isDebtTab ? '' : filterLevel || '',
+    clientQueryOptions
+  );
+
+  const visibleClients = useMemo(() => {
+    const list = Array.isArray(clients) ? clients : [];
+    if (!isDebtTab) return list;
+    return list.filter((client) => getClientDebt(client) > 0);
+  }, [clients, isDebtTab]);
 
 
   const renderClientItem = ({ item }) => {
     const statusColor = getStatusColor(item.lastPaymentDate);
     const levelColor = LEVEL_COLORS[item.level] || theme.colors.textSecondary;
+    const debt = getClientDebt(item);
 
     return (
       <TouchableOpacity 
@@ -58,8 +82,15 @@ export default function ClientsScreen({ navigation }) {
 
         <View style={styles.clientInfo}>
           <Text style={styles.clientName}>{item.firstName} {item.lastName}</Text>
-          <View style={[styles.levelBadge, { backgroundColor: levelColor }]}>
-            <Text style={styles.levelText}>{item.level || 'BRONCE'}</Text>
+          <View style={styles.clientBadgesRow}>
+            <View style={[styles.levelBadge, { backgroundColor: levelColor }]}>
+              <Text style={styles.levelText}>{item.level || 'BRONCE'}</Text>
+            </View>
+            {debt > 0 && (
+              <View style={styles.debtBadge}>
+                <Text style={styles.debtText}>{formatCurrency(debt)}</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -90,8 +121,23 @@ export default function ClientsScreen({ navigation }) {
           />
         </View>
 
-        <View style={styles.filterContainer}>
-          {Level.map(level => (
+        <View style={styles.tabsContainer}>
+          {TABS.map(tab => (
+            <TouchableOpacity
+              key={tab.id}
+              style={[styles.tabButton, activeTab === tab.id && styles.tabButtonActive]}
+              onPress={() => setActiveTab(tab.id)}
+            >
+              <Text style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {!isDebtTab && (
+          <View style={styles.filterContainer}>
+            {Level.map(level => (
             <TouchableOpacity 
               key={level}
               style={[styles.filterChip, filterLevel === level && styles.filterChipActive]}
@@ -101,12 +147,13 @@ export default function ClientsScreen({ navigation }) {
                 {level}
               </Text>
             </TouchableOpacity>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
       </View>
 
       <FlatList
-        data={clients}
+        data={visibleClients}
         keyExtractor={item => item.id}
         renderItem={renderClientItem}
         contentContainerStyle={styles.listContent}
@@ -116,7 +163,7 @@ export default function ClientsScreen({ navigation }) {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <MaterialCommunityIcons name="account-search-outline" size={60} color="#ccc" />
-            <Text style={styles.emptyText}>No se encontraron clientes</Text>
+            <Text style={styles.emptyText}>{isDebtTab ? 'No hay clientes con deuda' : 'No se encontraron clientes'}</Text>
           </View>
         }
       />

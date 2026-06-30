@@ -9,10 +9,10 @@ import {
 /**
  * Hook para listar clientes .
  */
-export const useClients = (searchTerm='', level='') => {
+export const useClients = (searchTerm='', level='', options = {}) => {
   return useQuery({
-    queryKey: ['clients', searchTerm, level],
-    queryFn: () => getClients(searchTerm, level),
+    queryKey: ['clients', searchTerm, level, options.sortBy || '', options.order || ''],
+    queryFn: () => getClients(searchTerm, level, options),
     placeholderData: (previousData) => previousData //sirve para mantener datos anterioes mientras llegan los datos de la nueva peticion
   });
 };

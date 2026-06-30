@@ -3,11 +3,13 @@ import api from './api';
 /**
  * findAllClients
  */
-export const getClients = async (searchTerm='',level='') => {
-  const response = await api.get('/users/clients',{
+export const getClients = async (searchTerm='', level='', options = {}) => {
+  const response = await api.get('/users/clients', {
     params: {
       search: searchTerm,
-      level: level
+      level: level || undefined,
+      sortBy: options.sortBy,
+      order: options.order,
     }
   });
   return response.data;
