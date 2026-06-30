@@ -81,15 +81,11 @@ export const CircularActionMenu = ({ product, onSelectAction }) => {
       { type: TRANSACTION_TYPES.LAYAWAY, icon: 'bookmark-check', label: TRANSACTION_TYPE_SHORT_LABELS[TRANSACTION_TYPES.LAYAWAY], color: '#fcc419' },
       { type: TRANSACTION_TYPES.WEEKLY_CREDIT, icon: 'calendar-check', label: TRANSACTION_TYPE_SHORT_LABELS[TRANSACTION_TYPES.WEEKLY_CREDIT], color: '#e64980' }
     );
-  } else if (isApartado) {
+  } else if (isApartado || isPrestamo) {
     actions.push(
       { type: TRANSACTION_TYPES.CASH, icon: 'cash-check', label: 'Contado', color: theme.colors.primary },
       { type: TRANSACTION_TYPES.WEEKLY_CREDIT, icon: 'calendar-check', label: 'Crédito', color: '#e64980' },
-      { type: 'RETURN', icon: 'lock-open-variant', label: 'Liberar', color: '#fa5252' }
-    );
-  } else if (isPrestamo) {
-    actions.push(
-      { type: 'RETURN', icon: 'keyboard-return', label: 'Devolver', color: '#fa5252' }
+      { type: 'RETURN', icon: isPrestamo ? 'keyboard-return' : 'lock-open-variant', label: isPrestamo ? 'Devolver' : 'Liberar', color: '#fa5252' }
     );
   }
 

@@ -4,7 +4,7 @@ import { TRANSACTION_TYPES, TRANSACTION_TYPE_LABELS } from '../constants/transac
 import { useClients } from './useClients';
 import { useCreateTransaction, useReturnProduct } from './useProductScanner';
 
-const LAYAWAY_STATUSES = ['LAYAWAY', 'APARTADO', 'RESERVED', 'RESERVADO'];
+const ASSIGNED_CONVERTIBLE_STATUSES = ['LAYAWAY', 'APARTADO', 'RESERVED', 'RESERVADO', 'LOAN', 'PRESTAMO'];
 const SELL_TYPES = [TRANSACTION_TYPES.CASH, TRANSACTION_TYPES.WEEKLY_CREDIT];
 
 const getProductStatus = (product) => (
@@ -185,14 +185,14 @@ export const useProductActionFlow = ({
     }
 
     const status = getProductStatus(product);
-    const isLayaway = LAYAWAY_STATUSES.includes(status);
+    const isAssignedConvertible = ASSIGNED_CONVERTIBLE_STATUSES.includes(status);
     const assignedClient = getAssignedClient(product);
 
-    if (isLayaway && SELL_TYPES.includes(type)) {
+    if (isAssignedConvertible && SELL_TYPES.includes(type)) {
       if (!assignedClient) {
         Alert.alert(
           'Cliente no disponible',
-          'Esta prenda está apartada, pero la respuesta no incluye el cliente asignado.'
+          'Esta prenda ya está asignada, pero la respuesta no incluye el cliente asignado.'
         );
         return;
       }
