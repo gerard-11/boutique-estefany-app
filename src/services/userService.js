@@ -26,6 +26,6 @@ export const getClientPaymentHistory = async (id) => {
 
 //se envia en data level, creditLimit y reason los 3 son opcionales
 export const updateFinancial = async (userId, data) => {
-  const response = await api.patch(`/users/clients/${userId}/financial`, data);
+  const response = await api.patch(`users/clients/${userId}/financial`, data);
   return response.data;
 };

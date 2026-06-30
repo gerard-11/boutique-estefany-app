@@ -12,9 +12,11 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useClientEnrichedProfile, useClientPaymentHistory } from '../../hooks/useClients';
+import { useClientEnrichedProfile, useClientPaymentHistory, useUpdateFinancial } from '../../hooks/useClients';
 import { useCreatePayment } from '../../hooks/usePayments';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { styles } from './ClientDetailScreen.styles';
+import { theme } from '../../theme';
 
 // Subcomponentes
 import ProfileHeader from './components/ProfileHeader';
@@ -28,10 +30,14 @@ const parsePaymentAmount = (value) => {
   return Number(normalized);
 };
 
+const formatNumberInput = (value = 0) => String(Number(value || 0));
+
 const TABS = [
   { id: "ACTIVE_DEBTS", label: "Deudas" },
   { id: "HISTORY", label: "Historial" },
 ];
+
+const LEVEL_OPTIONS = ['BRONCE', 'PLATA', 'ORO'];
 
 const getMovementDate = (item) => item?.paymentDate || item?.createdAt || item?.transaction?.createdAt;
 
@@ -59,6 +65,10 @@ export default function ClientDetailScreen({ route, navigation }) {
   const [activeTab, setActiveTab] = useState('ACTIVE_DEBTS');
   const [isPaymentFormVisible, setPaymentFormVisible] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [isFinancialFormVisible, setFinancialFormVisible] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState('BRONCE');
+  const [creditLimitInput, setCreditLimitInput] = useState('0');
+  const [financialReason, setFinancialReason] = useState('');
 
 
   const { 
@@ -76,6 +86,7 @@ export default function ClientDetailScreen({ route, navigation }) {
   } = useClientPaymentHistory(clientId);
 
   const { mutate: createPayment, isPending: isSavingPayment } = useCreatePayment();
+  const { mutate: updateFinancial, isPending: isSavingFinancial } = useUpdateFinancial();
 
   const paymentValue = useMemo(() => parsePaymentAmount(paymentAmount), [paymentAmount]);
   const currentDebt = profile?.financialSummary?.currentDebt || 0;
@@ -85,6 +96,65 @@ export default function ClientDetailScreen({ route, navigation }) {
     if (isSavingPayment) return;
     setPaymentFormVisible(false);
     setPaymentAmount("");
+  };
+
+  const openFinancialForm = () => {
+    setSelectedLevel(profile?.level || "BRONCE");
+    setCreditLimitInput(formatNumberInput(profile?.creditLimit));
+    setFinancialReason("");
+    setFinancialFormVisible(true);
+  };
+
+  const closeFinancialForm = () => {
+    if (isSavingFinancial) return;
+    setFinancialFormVisible(false);
+    setFinancialReason("");
+  };
+
+  const handleUpdateFinancial = () => {
+    const creditLimit = parsePaymentAmount(creditLimitInput);
+    const reason = financialReason.trim();
+
+    if (!LEVEL_OPTIONS.includes(selectedLevel)) {
+      Alert.alert("Nivel inválido", "Selecciona BRONCE, PLATA u ORO.");
+      return;
+    }
+
+    if (!Number.isFinite(creditLimit) || creditLimit < 0) {
+      Alert.alert("Límite inválido", "El límite de crédito debe ser un número mayor o igual a cero.");
+      return;
+    }
+
+    if (!reason) {
+      Alert.alert("Razón requerida", "Escribe la razón del cambio para dejar registro administrativo.");
+      return;
+    }
+
+    updateFinancial(
+      {
+        userId: clientId,
+        data: {
+          level: selectedLevel,
+          creditLimit,
+          reason,
+        },
+      },
+      {
+        onSuccess: () => {
+          Alert.alert("Cliente actualizado", "Los datos financieros se guardaron correctamente.");
+          setFinancialFormVisible(false);
+          setFinancialReason("");
+          refetchProfile();
+        },
+        onError: (error) => {
+          const serverError = error?.response?.data;
+          const errorMessage = Array.isArray(serverError?.message)
+            ? serverError.message.join("\n")
+            : serverError?.message || error.message || "No se pudo actualizar el cliente";
+          Alert.alert("Error", String(errorMessage));
+        },
+      }
+    );
   };
 
   const handleCreatePayment = () => {
@@ -167,9 +237,10 @@ export default function ClientDetailScreen({ route, navigation }) {
           />
         }
       >
-        <ProfileHeader 
-          user={profile} 
-          onRegisterPayment={() => setPaymentFormVisible(true)} 
+        <ProfileHeader
+          user={profile}
+          onRegisterPayment={() => setPaymentFormVisible(true)}
+          onEditFinancial={openFinancialForm}
         />
 
         <FinancialCards 
@@ -290,6 +361,86 @@ export default function ClientDetailScreen({ route, navigation }) {
                 disabled={isSavingPayment}
               >
                 <Text style={styles.paymentSubmitText}>{isSavingPayment ? "Guardando..." : "Guardar pago"}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      <Modal
+        visible={isFinancialFormVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={closeFinancialForm}
+      >
+        <KeyboardAvoidingView
+          style={styles.paymentModalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <View style={styles.paymentModalCard}>
+            <Text style={styles.paymentModalTitle}>Editar datos financieros</Text>
+            <Text style={styles.paymentModalSubtitle}>{profile.firstName} {profile.lastName}</Text>
+
+            <Text style={styles.paymentInputLabel}>Nivel del cliente</Text>
+            <View style={styles.levelSelector}>
+              {LEVEL_OPTIONS.map((level) => {
+                const isSelected = selectedLevel === level;
+                return (
+                  <TouchableOpacity
+                    key={level}
+                    style={[styles.levelOption, isSelected && styles.levelOptionActive]}
+                    onPress={() => setSelectedLevel(level)}
+                    disabled={isSavingFinancial}
+                  >
+                    <Text style={[styles.levelOptionText, isSelected && styles.levelOptionTextActive]}>
+                      {level}
+                    </Text>
+                    {isSelected && (
+                      <MaterialCommunityIcons name="check-circle" size={16} color={theme.colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <Text style={styles.paymentInputLabel}>Límite de crédito</Text>
+            <View style={styles.paymentInputWrapper}>
+              <Text style={styles.paymentCurrencyPrefix}>{String.fromCharCode(36)}</Text>
+              <TextInput
+                style={styles.paymentInput}
+                value={creditLimitInput}
+                onChangeText={setCreditLimitInput}
+                placeholder="0.00"
+                keyboardType="decimal-pad"
+                returnKeyType="next"
+              />
+            </View>
+
+            <Text style={styles.paymentInputLabel}>Razón del cambio</Text>
+            <TextInput
+              style={styles.financialReasonInput}
+              value={financialReason}
+              onChangeText={setFinancialReason}
+              placeholder="Ej. Buen historial de pagos"
+              multiline
+              textAlignVertical="top"
+              editable={!isSavingFinancial}
+            />
+
+            <View style={styles.paymentActions}>
+              <TouchableOpacity
+                style={styles.paymentCancelButton}
+                onPress={closeFinancialForm}
+                disabled={isSavingFinancial}
+              >
+                <Text style={styles.paymentCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.paymentSubmitButton, isSavingFinancial && styles.paymentSubmitButtonDisabled]}
+                onPress={handleUpdateFinancial}
+                disabled={isSavingFinancial}
+              >
+                <Text style={styles.paymentSubmitText}>{isSavingFinancial ? "Guardando..." : "Guardar cambios"}</Text>
               </TouchableOpacity>
             </View>
           </View>

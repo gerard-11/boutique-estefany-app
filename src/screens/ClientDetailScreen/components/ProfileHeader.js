@@ -16,7 +16,7 @@ const LEVEL_COLORS = {
   BRONCE: '#d9480f',
 };
 
-const ProfileHeader = ({ user, onRegisterPayment }) => {
+const ProfileHeader = ({ user, onRegisterPayment, onEditFinancial }) => {
   const status = STATUS_CONFIG[user.paymentStatus] || STATUS_CONFIG.NORMAL;
   const levelColor = LEVEL_COLORS[user.level] || theme.colors.textSecondary;
 
@@ -45,13 +45,23 @@ const ProfileHeader = ({ user, onRegisterPayment }) => {
         </View>
       </View>
 
-      <TouchableOpacity 
-        style={styles.registerPaymentButton}
-        onPress={onRegisterPayment}
-      >
-        <MaterialCommunityIcons name="cash-register" size={20} color="#fff" />
-        <Text style={styles.registerPaymentText}>Registrar Pago</Text>
-      </TouchableOpacity>
+      <View style={styles.headerActions}>
+        <TouchableOpacity
+          style={styles.registerPaymentButton}
+          onPress={onRegisterPayment}
+        >
+          <MaterialCommunityIcons name="cash-register" size={20} color="#fff" />
+          <Text style={styles.registerPaymentText}>Registrar Pago</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.editFinancialButton}
+          onPress={onEditFinancial}
+        >
+          <MaterialCommunityIcons name="account-cog" size={20} color={theme.colors.primary} />
+          <Text style={styles.editFinancialText}>Editar nivel</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
