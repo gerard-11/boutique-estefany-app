@@ -16,7 +16,7 @@ const STATUS_MAP = {
   SOLD: { label: 'Vendido', backgroundColor: '#fff5f5', color: '#fa5252' },
 };
 
-export const ProductFound = ({ product, onReturn, onReset, onSelectAction }) => {
+export const ProductFound = ({ product, onReset, onSelectAction }) => {
   const status = (product?.inventoryStatus?.status || product?.status || 'AVAILABLE').toUpperCase();
   const statusConfig = STATUS_MAP[status] || {
     label: status,
@@ -48,7 +48,6 @@ export const ProductFound = ({ product, onReturn, onReset, onSelectAction }) => 
       
       <CircularActionMenu 
         product={product}
-        onReturn={onReturn}
         onSelectAction={onSelectAction}
       />
 

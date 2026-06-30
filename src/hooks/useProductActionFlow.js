@@ -144,10 +144,13 @@ export const useProductActionFlow = ({
     });
   };
 
-  const handleReturn = () => {
+  const handleReturn = (targetProduct = product) => {
     if (isBusy) return;
 
-    if (!product?.barcode) {
+    const returnProductSnapshot = targetProduct;
+    const returnBarcode = returnProductSnapshot?.barcode;
+
+    if (!returnBarcode) {
       Alert.alert('Producto no disponible', 'No se encontró el código de barras para liberar esta prenda.');
       return;
     }
@@ -156,10 +159,10 @@ export const useProductActionFlow = ({
       { text: 'No', style: 'cancel' },
       {
         text: 'Sí',
-        onPress: () => returnProduct(String(product.barcode), {
+        onPress: () => returnProduct(String(returnBarcode), {
           onSuccess: () => {
             Alert.alert('Acción completada', returnSuccessMessage || 'Prenda liberada correctamente.');
-            onReturnSuccess?.({ product });
+            onReturnSuccess?.({ product: returnProductSnapshot });
           },
           onError: (error) => {
             const serverError = error?.response?.data;
@@ -263,6 +266,7 @@ export const useProductActionFlow = ({
     isCreatingTransaction,
     isReturningProduct,
     isBusy,
+    handleReturn,
     handleProductAction,
     formatCurrency,
   };

@@ -58,7 +58,7 @@ const AnimatedButton = ({ index, total, expansion, action, onPress }) => {
   );
 };
 
-export const CircularActionMenu = ({ product, onReturn, onSelectAction }) => {
+export const CircularActionMenu = ({ product, onSelectAction }) => {
   const expansion = useSharedValue(0);
   
   const status = (product?.inventoryStatus?.status || product?.status || 'AVAILABLE').toUpperCase();
@@ -94,12 +94,7 @@ export const CircularActionMenu = ({ product, onReturn, onSelectAction }) => {
   }
 
   const handleAction = (action) => {
-    if (action.type === 'RETURN') {
-      onReturn();
-      return;
-    }
-
-    onSelectAction(action.type);
+    onSelectAction?.(action.type);
   };
 
   const centerIconStyle = useAnimatedStyle(() => ({

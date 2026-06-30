@@ -100,8 +100,13 @@ export default function ScannerScreen({ navigation }) {
     handleCancel
   } = useScannerHandlers(navigation, resetForm, setValue);
 
+  const productForActions = useMemo(() => {
+    if (!product || product.barcode || !barcode) return product;
+    return { ...product, barcode };
+  }, [product, barcode]);
+
   const productActionFlow = useProductActionFlow({
-    product,
+    product: productForActions,
     transactionSuccessMessage: 'Transacción completada',
     onTransactionSuccess: () => navigation.goBack(),
     onReturnSuccess: () => resetStore(),
@@ -279,7 +284,6 @@ export default function ScannerScreen({ navigation }) {
               (product && step !== 'NEW_FORM') ? (
                 <ProductFound
                   product={product}
-                  onReturn={productActionFlow.handleReturn}
                   onReset={() => { resetStore(); resetForm(); }}
                   onSelectAction={productActionFlow.handleProductAction}
                 />

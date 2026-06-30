@@ -81,8 +81,15 @@ export default function InventoryScreen() {
 
   const handleSelectInventoryAction = (type) => {
     if (!actionProduct || productActionFlow.isBusy) return;
-    setTransactionProduct(actionProduct);
-    productActionFlow.handleProductAction(type);
+    const selectedProduct = actionProduct;
+    setTransactionProduct(selectedProduct);
+
+    if (type === 'RETURN') {
+      productActionFlow.handleReturn(selectedProduct);
+    } else {
+      productActionFlow.handleProductAction(type);
+    }
+
     setActionProduct(null);
   };
 
@@ -212,7 +219,6 @@ export default function InventoryScreen() {
             </View>
             <CircularActionMenu
               product={actionProduct}
-              onReturn={() => handleSelectInventoryAction('RETURN')}
               onSelectAction={handleSelectInventoryAction}
             />
           </View>
