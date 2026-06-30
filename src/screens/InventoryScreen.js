@@ -7,17 +7,15 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
-  Alert,
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useProducts } from '../hooks/useProducts';
-import { useClients } from '../hooks/useClients';
-import { useCreateTransaction } from '../hooks/useProductScanner';
+import { useProductActionFlow } from '../hooks/useProductActionFlow';
 import { ClientPickerModal } from './ScannerScreen/components/ClientPickerModal';
 import { CircularActionMenu } from './ScannerScreen/components/CircularActionMenu';
-import { TRANSACTION_TYPE_LABELS } from '../constants/transactionTypes';
+import { ProductCashSaleModal } from '../components/ProductCashSaleModal';
 import { styles } from './InventoryScreen.styles';
 import { theme } from '../theme';
 
@@ -40,79 +38,52 @@ const getProductStatus = (item) => {
   return item.stock > 0 ? 'AVAILABLE' : 'SOLD';
 };
 
-const canOpenActions = (product) => (
-  getProductStatus(product) === 'AVAILABLE' && product?.inventoryStatus?.canSell !== false
-);
+const ACTIONABLE_STATUSES = ['AVAILABLE', 'LAYAWAY', 'APARTADO', 'RESERVED', 'RESERVADO', 'LOAN', 'PRESTAMO'];
+
+const canOpenActions = (product) => {
+  const status = getProductStatus(product);
+  if (status === 'AVAILABLE') return product?.inventoryStatus?.canSell !== false;
+  return ACTIONABLE_STATUSES.includes(status);
+};
 
 export default function InventoryScreen() {
   const { data: products, isLoading, refetch, isRefetching } = useProducts();
   const [search, setSearch] = useState('');
-  const [clientSearch, setClientSearch] = useState('');
   const [actionProduct, setActionProduct] = useState(null);
-  const [assigningProduct, setAssigningProduct] = useState(null);
-  const [selectedTransactionType, setSelectedTransactionType] = useState(null);
-  const { data: clients } = useClients(clientSearch, '');
-  const { mutate: createTransaction, isPending: isAssigningProduct } = useCreateTransaction();
+  const [transactionProduct, setTransactionProduct] = useState(null);
 
-  const closeActionMenu = () => setActionProduct(null);
+  const activeTransactionProduct = actionProduct || transactionProduct;
+  const productActionFlow = useProductActionFlow({
+    product: activeTransactionProduct,
+    onTransactionSuccess: () => {
+      setActionProduct(null);
+      setTransactionProduct(null);
+      refetch();
+    },
+    onReturnSuccess: () => {
+      setActionProduct(null);
+      setTransactionProduct(null);
+      refetch();
+    },
+  });
+
+  const closeActionMenu = () => {
+    if (productActionFlow.isBusy) return;
+    setActionProduct(null);
+    setTransactionProduct(null);
+  };
 
   const openActionMenu = (product) => {
     if (!canOpenActions(product)) return;
     setActionProduct(product);
-  };
-
-  const closeAssignment = () => {
-    if (isAssigningProduct) return;
-    setAssigningProduct(null);
-    setSelectedTransactionType(null);
-    setClientSearch('');
+    setTransactionProduct(product);
   };
 
   const handleSelectInventoryAction = (type) => {
-    if (!actionProduct || type === 'RETURN') return;
-    setAssigningProduct(actionProduct);
-    setSelectedTransactionType(type);
+    if (!actionProduct || productActionFlow.isBusy) return;
+    setTransactionProduct(actionProduct);
+    productActionFlow.handleProductAction(type);
     setActionProduct(null);
-    setClientSearch('');
-  };
-
-  const handleAssignProduct = (client) => {
-    if (!assigningProduct || !selectedTransactionType || isAssigningProduct) return;
-
-    const userId = client?.id || client?.userId || client?.clientId;
-    if (!userId) {
-      Alert.alert('Cliente no disponible', 'No se encontró el ID del cliente seleccionado.');
-      return;
-    }
-
-    const payload = {
-      userId,
-      type: selectedTransactionType,
-    };
-
-    if (assigningProduct.barcode) {
-      payload.productBarcodes = [String(assigningProduct.barcode)];
-    } else {
-      payload.productIds = [String(assigningProduct.id)];
-    }
-
-    createTransaction(payload, {
-      onSuccess: () => {
-        const label = TRANSACTION_TYPE_LABELS[selectedTransactionType] || 'Asignación';
-        Alert.alert('Acción completada', label + ' registrada correctamente.');
-        setAssigningProduct(null);
-        setSelectedTransactionType(null);
-        setClientSearch('');
-        refetch();
-      },
-      onError: (error) => {
-        const serverError = error?.response?.data;
-        const errorMessage = Array.isArray(serverError?.message)
-          ? serverError.message.join('\n')
-          : serverError?.message || error.message || 'No se pudo completar la acción';
-        Alert.alert('Error', String(errorMessage));
-      },
-    });
   };
 
   const filteredProducts = useMemo(() => {
@@ -241,7 +212,7 @@ export default function InventoryScreen() {
             </View>
             <CircularActionMenu
               product={actionProduct}
-              onReturn={closeActionMenu}
+              onReturn={() => handleSelectInventoryAction('RETURN')}
               onSelectAction={handleSelectInventoryAction}
             />
           </View>
@@ -249,13 +220,26 @@ export default function InventoryScreen() {
       </Modal>
 
       <ClientPickerModal
-        visible={!!assigningProduct}
-        search={clientSearch}
-        clients={clients}
-        isSelecting={isAssigningProduct}
-        onSearchChange={setClientSearch}
-        onSelectClient={handleAssignProduct}
-        onClose={closeAssignment}
+        visible={productActionFlow.isClientPickerVisible}
+        search={productActionFlow.clientSearch}
+        clients={productActionFlow.clients}
+        isSelecting={productActionFlow.isCreatingTransaction}
+        onSearchChange={productActionFlow.setClientSearch}
+        onSelectClient={productActionFlow.handleClientSelection}
+        onClose={productActionFlow.closeClientPicker}
+      />
+
+      <ProductCashSaleModal
+        visible={!!productActionFlow.cashSale}
+        client={productActionFlow.cashSale?.client}
+        price={productActionFlow.productPrice}
+        total={productActionFlow.cashTotal}
+        discountInput={productActionFlow.discountInput}
+        isSubmitting={productActionFlow.isCreatingTransaction}
+        onDiscountChange={productActionFlow.setDiscountInput}
+        onSubmit={productActionFlow.submitCashSale}
+        onClose={productActionFlow.closeCashSale}
+        formatCurrency={productActionFlow.formatCurrency}
       />
     </SafeAreaView>
   );

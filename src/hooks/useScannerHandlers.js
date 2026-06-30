@@ -1,23 +1,14 @@
 import { Alert } from 'react-native';
 import { useScannerStore } from './useScannerStore';
-import {
-  useCreateIntelligentProduct,
-  useCreateTransaction,
-  useReturnProduct
-} from './useProductScanner';
+import { useCreateIntelligentProduct } from './useProductScanner';
 
 export const useScannerHandlers = (navigation, resetForm, setValue) => {
   const {
     barcode,
-    transactionType,
-    reset: resetStore,
-    closeClientPicker
+    reset: resetStore
   } = useScannerStore();
 
   const { mutate: createProduct, isPending: isSaving } = useCreateIntelligentProduct();
-  const { mutate: createTransaction, isPending: isCreatingTransaction } = useCreateTransaction();
-  const { mutate: returnProduct } = useReturnProduct();
-
   const handleSaveProduct = (data) => {
     const payload = {
       name: data.name?.trim(),
@@ -52,68 +43,6 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
         Alert.alert('Error de Validación', String(errorMessage));
       }
     });
-  };
-
-  const handleReturn = () => {
-    Alert.alert('Devolución', '¿Liberar esta prenda?', [
-      { text: 'No', style: 'cancel' },
-      {
-        text: 'Sí',
-        onPress: () => returnProduct(barcode, {
-          onSuccess: () => resetStore()
-        })
-      }
-    ]);
-  };
-
-  const handleCreateTransactionForClient = (client, type, options = {}) => {
-    if (isCreatingTransaction) return;
-
-    if (!type) {
-      Alert.alert('Error', 'Selecciona un tipo de transacción antes de elegir cliente.');
-      return;
-    }
-
-    if (!barcode) {
-      Alert.alert('Error', 'No se encontró el código de barras del producto escaneado.');
-      return;
-    }
-
-    const userId = client?.id || client?.userId || client?.clientId;
-    if (!userId) {
-      Alert.alert('Cliente no disponible', 'No se encontró el cliente asignado para esta transacción.');
-      return;
-    }
-
-    const payload = {
-      userId,
-      type,
-      productBarcodes: [String(barcode)],
-    };
-
-    const discountPercentage = Number(options.discountPercentage || 0);
-    if (Number.isFinite(discountPercentage) && discountPercentage > 0) {
-      payload.discountPercentage = discountPercentage;
-    }
-
-    createTransaction(payload, {
-      onSuccess: () => {
-        closeClientPicker();
-        Alert.alert('Éxito', 'Transacción completada');
-        navigation.goBack();
-      },
-      onError: (error) => {
-        const serverError = error?.response?.data;
-        const errorMessage = Array.isArray(serverError?.message)
-          ? serverError.message.join('\n')
-          : serverError?.message || error.message || 'No se pudo completar la transacción';
-        Alert.alert('Error', String(errorMessage));
-      }
-    });
-  };
-
-  const handleSelectClient = (client) => {
-    handleCreateTransactionForClient(client, transactionType);
   };
 
   const handleSelectPickerItem = (item, pickerType) => {
@@ -168,11 +97,7 @@ export const useScannerHandlers = (navigation, resetForm, setValue) => {
 
   return {
     isSaving,
-    isCreatingTransaction,
     handleSaveProduct,
-    handleReturn,
-    handleSelectClient,
-    handleCreateTransactionForClient,
     handleSelectPickerItem,
     handleCancel
   };
