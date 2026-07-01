@@ -19,6 +19,7 @@ import {
 } from '../hooks/useClientPortal';
 import ClientHeader from '../components/ClientHeader';
 import ClientMetricsGrid from '../components/ClientMetricsGrid';
+import ClientLevelCard from '../components/ClientLevelCard';
 import ClientPaymentStatusCard from '../components/ClientPaymentStatusCard';
 import ClientTabs from '../components/ClientTabs';
 import ClientTransactionsSection from '../components/ClientTransactionsSection';
@@ -203,10 +204,10 @@ export default function ClientHomeScreen() {
 
         <ClientPaymentStatusCard paymentStatus={paymentStatus} lastPayment={lastPayment} />
 
+        <ClientLevelCard client={client} onEditProfile={openProfileForm} />
+
         <ClientMetricsGrid
-          client={client}
           financialSummary={financialSummary}
-          onEditProfile={openProfileForm}
         />
 
         <ClientTabs

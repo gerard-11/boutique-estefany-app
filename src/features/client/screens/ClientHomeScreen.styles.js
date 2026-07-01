@@ -152,6 +152,37 @@ export const styles = StyleSheet.create({
     color: theme.colors.text,
     fontWeight: '800',
   },
+  levelCard: {
+    marginHorizontal: 20,
+    marginTop: 12,
+    padding: 14,
+    minHeight: 72,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  levelCardIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  levelCardTextBlock: {
+    flex: 1,
+  },
+  levelCardLabel: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    fontWeight: '800',
+  },
+  levelCardValue: {
+    marginTop: 2,
+    fontSize: 18,
+    fontWeight: '900',
+  },
   section: {
     paddingHorizontal: 20,
     marginTop: 18,

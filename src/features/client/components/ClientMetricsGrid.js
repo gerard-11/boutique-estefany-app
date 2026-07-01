@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../../theme';
 import { styles } from '../screens/ClientHomeScreen.styles';
@@ -17,7 +17,7 @@ function MetricCard({ icon, color, value, label }) {
   );
 }
 
-export default function ClientMetricsGrid({ client, financialSummary, onEditProfile }) {
+export default function ClientMetricsGrid({ financialSummary }) {
   return (
     <View style={styles.section}>
       <View style={styles.cardsGrid}>
@@ -33,13 +33,6 @@ export default function ClientMetricsGrid({ client, financialSummary, onEditProf
           value={formatCurrency(financialSummary.availableCredit)}
           label="Disponible"
         />
-        <TouchableOpacity style={styles.metricCard} onPress={onEditProfile}>
-          <View style={[styles.metricIcon, { backgroundColor: theme.colors.primary + '18' }]}>
-            <MaterialCommunityIcons name="account-edit-outline" size={22} color={theme.colors.primary} />
-          </View>
-          <Text style={styles.metricValue}>{client.level || 'BRONCE'}</Text>
-          <Text style={styles.metricLabel}>Editar perfil</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
