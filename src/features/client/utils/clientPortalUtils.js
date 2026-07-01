@@ -46,23 +46,43 @@ export const getArrayPayload = (payload) => {
   return [];
 };
 
+const isTerminalTransaction = (transaction) => {
+  const status = transaction?.status || transaction?.transaction?.status;
+  const remainingBalance = Number(transaction?.remainingBalance ?? NaN);
+
+  return (
+    status === 'COMPLETED' ||
+    status === 'CANCELLED' ||
+    status === 'REJECTED' ||
+    status === 'RETURNED' ||
+    (Number.isFinite(remainingBalance) && remainingBalance <= 0 && transaction?.totalAmount !== undefined)
+  );
+};
+
 export const getHistoryItems = (paymentHistory) => {
   if (Array.isArray(paymentHistory)) return paymentHistory;
 
-  const groups = [
+  const paymentEvents = [
     paymentHistory?.paymentHistory,
-    paymentHistory?.purchaseHistory,
     paymentHistory?.payments,
+  ].flatMap((group) => (Array.isArray(group) ? group : []));
+
+  const activeAccountEvents = Array.isArray(paymentHistory?.activeAccounts)
+    ? paymentHistory.activeAccounts
+    : [];
+
+  const purchaseEvents = [
+    paymentHistory?.purchaseHistory,
     paymentHistory?.transactions,
-    paymentHistory?.activeAccounts,
     paymentHistory?.completedTransactions,
     paymentHistory?.purchases,
     paymentHistory?.layaways,
     paymentHistory?.credits,
-  ];
-
-  return groups
+  ]
     .flatMap((group) => (Array.isArray(group) ? group : []))
+    .filter(isTerminalTransaction);
+
+  return [...paymentEvents, ...activeAccountEvents, ...purchaseEvents]
     .sort((a, b) => new Date(b.paymentDate || b.createdAt || 0) - new Date(a.paymentDate || a.createdAt || 0));
 };
 
@@ -97,7 +117,11 @@ export const getProducts = (transaction) => {
     }));
   }
 
-  return (transaction?.products || []).map((product) => ({
+  const products = Array.isArray(transaction?.products)
+    ? transaction.products
+    : transaction?.transaction?.products || [];
+
+  return products.map((product) => ({
     id: product.id,
     name: product.name || 'Producto',
     quantity: product.quantity || 1,
@@ -105,17 +129,46 @@ export const getProducts = (transaction) => {
   }));
 };
 
+export const getTransactionProductTitle = (transaction) => {
+  const products = getProducts(transaction);
+  const firstProduct = products[0];
+
+  if (!firstProduct) return 'Producto';
+  if (products.length === 1) return firstProduct.name;
+
+  return firstProduct.name + ' +' + (products.length - 1);
+};
+
 export const getTransactionId = (transaction) => (
   transaction?.id || transaction?.transactionId || transaction?.transaction?.id
 );
 
 export const getTransactionType = (transaction) => (
-  transaction?.type || (transaction?.amount !== undefined ? 'PAYMENT' : 'CASH')
+  transaction?.type || transaction?.transaction?.type || (transaction?.amount !== undefined ? 'PAYMENT' : 'CASH')
 );
 
 export const getTransactionDate = (transaction) => (
   transaction?.paymentDate || transaction?.createdAt || transaction?.transaction?.createdAt
 );
+
+export const getTransactionStatusConfig = (transaction) => {
+  if (transaction?.amount !== undefined && transaction?.totalAmount === undefined) {
+    return { label: 'Pago registrado', color: theme.colors.success };
+  }
+
+  const remainingBalance = Number(transaction?.remainingBalance ?? 0);
+  const status = transaction?.status || transaction?.transaction?.status;
+
+  if (status === 'COMPLETED' || remainingBalance <= 0 && transaction?.totalAmount !== undefined) {
+    return { label: 'Pagada / terminada', color: theme.colors.danger };
+  }
+
+  if (status === 'ACTIVE') return { label: 'Cuenta activa', color: theme.colors.info };
+  if (status === 'PENDING_APPROVAL') return { label: 'Por aprobar', color: theme.colors.warning };
+  if (status === 'CANCELLED' || status === 'REJECTED') return { label: 'Cancelada', color: theme.colors.danger };
+
+  return null;
+};
 
 export const getTransactionAmount = (transaction) => {
   if (transaction?.amount !== undefined && transaction?.totalAmount === undefined) {

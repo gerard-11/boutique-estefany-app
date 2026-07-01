@@ -221,10 +221,31 @@ export const styles = StyleSheet.create({
     fontWeight: '800',
     color: theme.colors.text,
   },
-  transactionDate: {
+  transactionTypeLabel: {
     marginTop: 2,
     fontSize: 12,
+    fontWeight: '700',
     color: theme.colors.textSecondary,
+  },
+  transactionInfoRow: {
+    marginTop: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  transactionDate: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+  },
+  transactionStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  transactionStatusText: {
+    fontSize: 10,
+    fontWeight: '800',
   },
   transactionAmount: {
     fontSize: 15,

@@ -8,8 +8,10 @@ import {
   formatDate,
   getProducts,
   getTransactionId,
+  getTransactionProductTitle,
   getTransactionAmount,
   getTransactionDate,
+  getTransactionStatusConfig,
   getTransactionType,
   TRANSACTION_ICON_CONFIG,
 } from '../utils/clientPortalUtils';
@@ -25,6 +27,9 @@ export default function ClientTransactionCard({
   const icon = TRANSACTION_ICON_CONFIG[type] || TRANSACTION_ICON_CONFIG.CASH;
   const products = getProducts(transaction);
   const amount = getTransactionAmount(transaction);
+  const productTitle = getTransactionProductTitle(transaction);
+  const typeLabel = TRANSACTION_TYPE_LABELS[type] || type;
+  const statusConfig = mode === 'HISTORY' ? getTransactionStatusConfig(transaction) : null;
   return (
     <View style={styles.transactionCard}>
       <View style={styles.transactionHeader}>
@@ -33,8 +38,18 @@ export default function ClientTransactionCard({
         </View>
 
         <View style={styles.transactionMain}>
-          <Text style={styles.transactionTitle}>{TRANSACTION_TYPE_LABELS[type] || type}</Text>
-          <Text style={styles.transactionDate}>{formatDate(getTransactionDate(transaction))}</Text>
+          <Text style={styles.transactionTitle}>{productTitle}</Text>
+          <Text style={styles.transactionTypeLabel}>{typeLabel}</Text>
+          <View style={styles.transactionInfoRow}>
+            <Text style={styles.transactionDate}>{formatDate(getTransactionDate(transaction))}</Text>
+            {statusConfig && (
+              <View style={[styles.transactionStatusBadge, { backgroundColor: statusConfig.color + '18' }]}>
+                <Text style={[styles.transactionStatusText, { color: statusConfig.color }]}>
+                  {statusConfig.label}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
 
         <Text style={styles.transactionAmount}>{formatCurrency(amount)}</Text>
