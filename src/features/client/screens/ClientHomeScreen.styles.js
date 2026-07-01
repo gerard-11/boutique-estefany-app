@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StatusBar, StyleSheet } from 'react-native';
 import { theme } from '../../../theme';
 
 export const styles = StyleSheet.create({
@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
   header: {
     backgroundColor: theme.colors.white,
     paddingHorizontal: 20,
-    paddingTop: 18,
+    paddingTop: (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0) + 18,
     paddingBottom: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
