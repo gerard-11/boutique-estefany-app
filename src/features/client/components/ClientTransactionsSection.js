@@ -5,6 +5,19 @@ import { styles } from '../screens/ClientHomeScreen.styles';
 import ClientTransactionCard from './ClientTransactionCard';
 import EmptyState from './EmptyState';
 
+const getTransactionCardKey = (transaction, activeTab, index) => [
+  activeTab,
+  transaction?.id,
+  transaction?.paymentId,
+  transaction?.transactionId,
+  transaction?.transaction?.id,
+  transaction?.paymentDate,
+  transaction?.createdAt,
+  transaction?.type,
+  transaction?.amount,
+  index,
+].filter((value) => value !== undefined && value !== null && value !== '').join('-');
+
 const SECTION_TITLES = {
   ACTIVE: 'Transacciones activas',
   PENDING: 'Por aprobar',
@@ -18,7 +31,6 @@ export default function ClientTransactionsSection({
   isActionLoading,
   onAccept,
   onReject,
-  onRequestReturn,
 }) {
   return (
     <View style={styles.section}>
@@ -39,12 +51,11 @@ export default function ClientTransactionsSection({
       ) : (
         transactions.map((transaction, index) => (
           <ClientTransactionCard
-            key={transaction.id || transaction.paymentId || index}
+            key={getTransactionCardKey(transaction, activeTab, index)}
             transaction={transaction}
             mode={activeTab}
             onAccept={onAccept}
             onReject={onReject}
-            onRequestReturn={onRequestReturn}
             isActionLoading={isActionLoading}
           />
         ))

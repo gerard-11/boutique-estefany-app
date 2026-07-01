@@ -24,8 +24,3 @@ export const rejectTransaction = async (transactionId) => {
   const response = await api.patch(`/transactions/${transactionId}/reject`);
   return response.data;
 };
-
-export const requestTransactionReturn = async (transactionId) => {
-  const response = await api.patch(`/transactions/${transactionId}/request-return`);
-  return response.data;
-};

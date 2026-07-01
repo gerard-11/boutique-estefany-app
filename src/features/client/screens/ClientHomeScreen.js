@@ -15,7 +15,6 @@ import {
   useMyProfile,
   useMyPaymentHistory,
   useRejectTransaction,
-  useRequestTransactionReturn,
 } from '../hooks/useClientPortal';
 import ClientHeader from '../components/ClientHeader';
 import ClientMetricsGrid from '../components/ClientMetricsGrid';
@@ -53,7 +52,6 @@ export default function ClientHomeScreen() {
   const completeProfile = useCompleteMyProfile();
   const acceptTransaction = useAcceptTransaction();
   const rejectTransaction = useRejectTransaction();
-  const requestReturn = useRequestTransactionReturn();
 
   const client = profile || authProfile || {};
   const financialSummary = client.financialSummary || {};
@@ -81,8 +79,7 @@ export default function ClientHomeScreen() {
 
   const isActionLoading = (
     acceptTransaction.isPending ||
-    rejectTransaction.isPending ||
-    requestReturn.isPending
+    rejectTransaction.isPending
   );
 
   const openProfileForm = () => {
@@ -150,25 +147,6 @@ export default function ClientHomeScreen() {
     );
   };
 
-  const handleRequestReturn = (transactionId) => {
-    Alert.alert(
-      'Solicitar devolucion',
-      'Se enviara una solicitud para que administracion la revise.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Solicitar',
-          onPress: () => {
-            requestReturn.mutate(transactionId, {
-              onSuccess: () => Alert.alert('Solicitud enviada', 'Administracion revisara la devolucion.'),
-              onError: (error) => Alert.alert('Error', getServerMessage(error, 'No se pudo solicitar la devolucion.')),
-            });
-          },
-        },
-      ]
-    );
-  };
-
   if (isProfileLoading && !profile) {
     return (
       <View style={styles.loader}>
@@ -216,7 +194,6 @@ export default function ClientHomeScreen() {
           isActionLoading={isActionLoading}
           onAccept={handleAccept}
           onReject={handleReject}
-          onRequestReturn={handleRequestReturn}
         />
       </ScrollView>
 

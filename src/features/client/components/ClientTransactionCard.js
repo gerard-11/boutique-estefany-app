@@ -2,7 +2,6 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TRANSACTION_TYPE_LABELS } from '../../../constants/transactionTypes';
-import { CLIENT_TRANSACTION_STATUSES } from '../hooks/useClientPortal';
 import { styles } from '../screens/ClientHomeScreen.styles';
 import {
   formatCurrency,
@@ -20,15 +19,12 @@ export default function ClientTransactionCard({
   mode,
   onAccept,
   onReject,
-  onRequestReturn,
   isActionLoading,
 }) {
   const type = getTransactionType(transaction);
   const icon = TRANSACTION_ICON_CONFIG[type] || TRANSACTION_ICON_CONFIG.CASH;
   const products = getProducts(transaction);
   const amount = getTransactionAmount(transaction);
-  const canRequestReturn = mode === 'ACTIVE' && transaction?.status === CLIENT_TRANSACTION_STATUSES.ACTIVE;
-
   return (
     <View style={styles.transactionCard}>
       <View style={styles.transactionHeader}>
@@ -72,18 +68,6 @@ export default function ClientTransactionCard({
             disabled={isActionLoading}
           >
             <Text style={[styles.secondaryActionText, styles.dangerActionText]}>Rechazar</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {canRequestReturn && (
-        <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={styles.secondaryAction}
-            onPress={() => onRequestReturn(getTransactionId(transaction))}
-            disabled={isActionLoading}
-          >
-            <Text style={styles.secondaryActionText}>Solicitar devolucion</Text>
           </TouchableOpacity>
         </View>
       )}
