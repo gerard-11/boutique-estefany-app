@@ -73,14 +73,14 @@ export const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.md,
     color: theme.colors.text,
   },
-  adminTitle: {
+  emailAuthTitle: {
     fontSize: theme.typography.fontSize.lg,
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.primary,
     marginBottom: theme.spacing.lg,
     textAlign: 'center',
   },
-  adminLoginButton: {
+  emailAuthButton: {
     backgroundColor: theme.colors.primary,
     height: 55,
     borderRadius: theme.borderRadius.md,
@@ -89,12 +89,12 @@ export const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
     ...theme.shadows.light,
   },
-  adminLoginButtonText: {
+  emailAuthButtonText: {
     color: theme.colors.white,
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.medium,
   },
-  adminToggleText: {
+  emailAuthToggleText: {
     color: theme.colors.primary,
     fontSize: theme.typography.fontSize.md,
     textAlign: 'center',

@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "849272336378-c7pb0j4o4ebj6bmknqee7tkgtkrcbvmg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gerardorito.boutiqueestefany",
+            "certificate_hash": "3b0674a45034f391d9deb5f01f43762a0dc5700d"
+          }
+        },
+        {
           "client_id": "849272336378-oj2d2pne63jc3tnlhplbbaftf2hutlqo.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "849272336378-oj2d2pne63jc3tnlhplbbaftf2hutlqo.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "849272336378-tuib75770io9ve58suvgp1uqnu4t178o.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.gerardorito.boutiqueestefany"
+              }
             }
           ]
         }

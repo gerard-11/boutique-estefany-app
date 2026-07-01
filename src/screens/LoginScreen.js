@@ -28,6 +28,32 @@ const getConfiguredClientId = (value) => {
   return value;
 };
 
+const AUTH_MODES = {
+  LOGIN: 'LOGIN',
+  REGISTER: 'REGISTER',
+};
+
+const getEmailAuthErrorMessage = (error, isRegisterMode) => {
+  switch (error?.code) {
+    case 'auth/email-already-in-use':
+      return 'Este correo ya tiene una cuenta. Inicia sesión con tus credenciales.';
+    case 'auth/invalid-email':
+      return 'Ingresa un correo válido.';
+    case 'auth/invalid-credential':
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+      return 'Correo o contraseña incorrectos.';
+    case 'auth/weak-password':
+      return 'La contraseña debe tener al menos 6 caracteres.';
+    case 'auth/network-request-failed':
+      return 'No se pudo conectar con Firebase. Revisa tu conexión.';
+    default:
+      return isRegisterMode
+        ? 'No se pudo crear la cuenta. Intenta de nuevo.'
+        : 'No se pudo iniciar sesión. Verifica tus credenciales.';
+  }
+};
+
 export default function LoginScreen() {
   const {
     GOOGLE_WEB_CLIENT_ID,
@@ -36,9 +62,10 @@ export default function LoginScreen() {
     authError,
   } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
-  const [adminMode, setAdminMode] = useState(false);
-  const [email, setEmail] = useState('admin@test.com');
-  const [password, setPassword] = useState('12345678');
+  const [emailAuthVisible, setEmailAuthVisible] = useState(false);
+  const [authMode, setAuthMode] = useState(AUTH_MODES.LOGIN);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const googleWebClientId = getConfiguredClientId(GOOGLE_WEB_CLIENT_ID);
   const googleAndroidClientId = getConfiguredClientId(GOOGLE_ANDROID_CLIENT_ID);
@@ -91,32 +118,52 @@ export default function LoginScreen() {
     }
   };
 
-  const handleAdminLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Por favor ingresa email y contraseña');
+  const handleEmailAuth = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const isRegisterMode = authMode === AUTH_MODES.REGISTER;
+
+    if (!normalizedEmail || !password) {
+      Alert.alert('Error', 'Ingresa correo y contraseña.');
+      return;
+    }
+
+    if (isRegisterMode && password.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres.');
       return;
     }
 
     setLoading(true);
     try {
-      // Primero intentamos sign in, si falla (usuario no existe) creamos la cuenta
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (error) {
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-          // Crear usuario de prueba
-          await createUserWithEmailAndPassword(auth, email, password);
-        } else {
-          throw error;
-        }
+      if (isRegisterMode) {
+        await createUserWithEmailAndPassword(auth, normalizedEmail, password);
+      } else {
+        await signInWithEmailAndPassword(auth, normalizedEmail, password);
       }
     } catch (error) {
-      console.error('Admin Login Error:', error);
-      Alert.alert('Error', 'No se pudo conectar. Verifica tus credenciales.');
+      console.error('Email Auth Error:', error);
+      Alert.alert('Error', getEmailAuthErrorMessage(error, isRegisterMode));
     } finally {
       setLoading(false);
     }
   };
+
+  const showLoginForm = () => {
+    setAuthMode(AUTH_MODES.LOGIN);
+    setEmailAuthVisible(true);
+  };
+
+  const toggleEmailAuthMode = () => {
+    setAuthMode((currentMode) => (
+      currentMode === AUTH_MODES.LOGIN ? AUTH_MODES.REGISTER : AUTH_MODES.LOGIN
+    ));
+  };
+
+  const hideEmailAuth = () => {
+    setEmailAuthVisible(false);
+    setAuthMode(AUTH_MODES.LOGIN);
+  };
+
+  const isRegisterMode = authMode === AUTH_MODES.REGISTER;
 
   return (
     <ScrollView style={styles.container}>
@@ -131,7 +178,7 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.authContainer}>
-          {!adminMode ? (
+          {!emailAuthVisible ? (
             <>
               <TouchableOpacity
                 style={[styles.googleButton, (loading || !request) && styles.disabledButton]}
@@ -147,8 +194,8 @@ export default function LoginScreen() {
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => setAdminMode(true)}>
-                <Text style={styles.adminToggleText}>Modo Admin (Testing)</Text>
+              <TouchableOpacity onPress={showLoginForm} disabled={loading}>
+                <Text style={styles.emailAuthToggleText}>Entrar con correo</Text>
               </TouchableOpacity>
 
               <Text style={styles.footerText}>
@@ -157,7 +204,9 @@ export default function LoginScreen() {
             </>
           ) : (
             <>
-              <Text style={styles.adminTitle}>Admin Testing</Text>
+              <Text style={styles.emailAuthTitle}>
+                {isRegisterMode ? 'Crear cuenta' : 'Entrar con correo'}
+              </Text>
 
               {authError && (
                 <Text style={styles.errorText}>{authError}</Text>
@@ -169,6 +218,9 @@ export default function LoginScreen() {
                 value={email}
                 onChangeText={setEmail}
                 editable={!loading}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                textContentType="emailAddress"
               />
 
               <TextInput
@@ -178,22 +230,31 @@ export default function LoginScreen() {
                 onChangeText={setPassword}
                 secureTextEntry
                 editable={!loading}
+                textContentType={isRegisterMode ? 'newPassword' : 'password'}
               />
 
               <TouchableOpacity
-                style={[styles.adminLoginButton, loading && styles.disabledButton]}
-                onPress={handleAdminLogin}
+                style={[styles.emailAuthButton, loading && styles.disabledButton]}
+                onPress={handleEmailAuth}
                 disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.adminLoginButtonText}>Ingresar como Admin</Text>
+                  <Text style={styles.emailAuthButtonText}>
+                    {isRegisterMode ? 'Crear cuenta' : 'Iniciar sesión'}
+                  </Text>
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => !loading && setAdminMode(false)}>
-                <Text style={styles.adminToggleText}>Volver a Google Login</Text>
+              <TouchableOpacity onPress={toggleEmailAuthMode} disabled={loading}>
+                <Text style={styles.emailAuthToggleText}>
+                  {isRegisterMode ? 'Ya tengo cuenta' : 'Crear cuenta nueva'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={hideEmailAuth} disabled={loading}>
+                <Text style={styles.emailAuthToggleText}>Volver a Google</Text>
               </TouchableOpacity>
             </>
           )}

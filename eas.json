@@ -6,6 +6,13 @@
     "preview": {
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "849272336378-oj2d2pne63jc3tnlhplbbaftf2hutlqo.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "849272336378-c7pb0j4o4ebj6bmknqee7tkgtkrcbvmg.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "849272336378-tuib75770io9ve58suvgp1uqnu4t178o.apps.googleusercontent.com",
+        "EXPO_PUBLIC_API_URL": "https://boutique-estefany-backend.onrender.com",
+        "EXPO_PUBLIC_SUPPORT_WHATSAPP_NUMBER": "+522211667895"
       }
     },
     "production": {
