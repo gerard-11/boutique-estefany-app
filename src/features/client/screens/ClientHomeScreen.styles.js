@@ -329,6 +329,16 @@ export const styles = StyleSheet.create({
     color: theme.colors.text,
     backgroundColor: '#fafafa',
   },
+  inputError: {
+    borderColor: theme.colors.danger,
+    marginBottom: 4,
+  },
+  inputErrorText: {
+    color: theme.colors.danger,
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
   modalActions: {
     flexDirection: 'row',
     gap: 10,
