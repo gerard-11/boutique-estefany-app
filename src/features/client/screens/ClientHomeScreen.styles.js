@@ -286,9 +286,15 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dangerAction: {
-    borderColor: '#ffc9c9',
-    backgroundColor: '#fff5f5',
+  whatsappAction: {
+    minHeight: 42,
+    marginTop: 10,
+    borderRadius: 10,
+    backgroundColor: '#fff9db',
+    borderWidth: 1,
+    borderColor: '#ffe066',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   primaryActionText: {
     color: theme.colors.white,
@@ -300,8 +306,10 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
   },
-  dangerActionText: {
-    color: theme.colors.danger,
+  whatsappActionText: {
+    color: '#8a5a00',
+    fontSize: 12,
+    fontWeight: '800',
   },
   emptyBox: {
     backgroundColor: theme.colors.white,

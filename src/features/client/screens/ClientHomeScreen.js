@@ -2,11 +2,13 @@ import React, { useContext, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   RefreshControl,
   ScrollView,
   View,
 } from 'react-native';
 import { AuthContext } from '../../../context/AuthContext';
+import { TRANSACTION_TYPE_LABELS } from '../../../constants/transactionTypes';
 import { theme } from '../../../theme';
 import {
   CLIENT_TRANSACTION_STATUSES,
@@ -14,7 +16,6 @@ import {
   useCompleteMyProfile,
   useMyProfile,
   useMyPaymentHistory,
-  useRejectTransaction,
 } from '../hooks/useClientPortal';
 import ClientHeader from '../components/ClientHeader';
 import ClientMetricsGrid from '../components/ClientMetricsGrid';
@@ -28,8 +29,13 @@ import {
   getHistoryItems,
   getPaymentStatus,
   getServerMessage,
+  getTransactionId,
+  getTransactionProductTitle,
+  getTransactionType,
 } from '../utils/clientPortalUtils';
 import { styles } from './ClientHomeScreen.styles';
+
+const SUPPORT_WHATSAPP_NUMBER = process.env.EXPO_PUBLIC_SUPPORT_WHATSAPP_NUMBER || '';
 
 export default function ClientHomeScreen() {
   const { profile: authProfile, signOut } = useContext(AuthContext);
@@ -51,7 +57,6 @@ export default function ClientHomeScreen() {
 
   const completeProfile = useCompleteMyProfile();
   const acceptTransaction = useAcceptTransaction();
-  const rejectTransaction = useRejectTransaction();
 
   const client = profile || authProfile || {};
   const financialSummary = client.financialSummary || {};
@@ -77,10 +82,7 @@ export default function ClientHomeScreen() {
 
   const isRefreshing = isProfileRefetching || isHistoryRefetching;
 
-  const isActionLoading = (
-    acceptTransaction.isPending ||
-    rejectTransaction.isPending
-  );
+  const isActionLoading = acceptTransaction.isPending;
 
   const openProfileForm = () => {
     setProfileFormVisible(true);
@@ -127,20 +129,37 @@ export default function ClientHomeScreen() {
     });
   };
 
-  const handleReject = (transactionId) => {
+  const handleRequestClarification = (transaction) => {
+    const supportNumber = SUPPORT_WHATSAPP_NUMBER.replace(/\D/g, '');
+
+    if (!supportNumber) {
+      Alert.alert('WhatsApp no configurado', 'Configura EXPO_PUBLIC_SUPPORT_WHATSAPP_NUMBER antes de compilar el APK.');
+      return;
+    }
+
+    const transactionId = getTransactionId(transaction);
+    const productTitle = getTransactionProductTitle(transaction);
+    const type = getTransactionType(transaction);
+    const typeLabel = TRANSACTION_TYPE_LABELS[type] || type;
+    const message = [
+      'Hola, necesito una aclaracion sobre esta venta pendiente:',
+      'Producto: ' + productTitle,
+      'Tipo: ' + typeLabel,
+      transactionId ? 'Venta: ' + transactionId : null,
+    ].filter(Boolean).join('\n');
+
     Alert.alert(
-      'Rechazar venta',
-      'La venta pendiente se cancelara.',
+      'Solicitar aclaracion',
+      '¿Quieres mandar un mensaje por WhatsApp para aclarar esta venta?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Rechazar',
-          style: 'destructive',
+          text: 'Mandar mensaje',
           onPress: () => {
-            rejectTransaction.mutate(transactionId, {
-              onSuccess: () => Alert.alert('Venta rechazada', 'La venta fue cancelada.'),
-              onError: (error) => Alert.alert('Error', getServerMessage(error, 'No se pudo rechazar la venta.')),
-            });
+            Linking.openURL('https://wa.me/' + supportNumber + '?text=' + encodeURIComponent(message))
+              .catch(() => {
+                Alert.alert('No se pudo abrir WhatsApp', 'Verifica que WhatsApp este instalado o intenta mas tarde.');
+              });
           },
         },
       ]
@@ -193,7 +212,7 @@ export default function ClientHomeScreen() {
           isLoading={isTabLoading}
           isActionLoading={isActionLoading}
           onAccept={handleAccept}
-          onReject={handleReject}
+          onRequestClarification={handleRequestClarification}
         />
       </ScrollView>
 

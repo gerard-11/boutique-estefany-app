@@ -19,8 +19,3 @@ export const acceptTransaction = async (transactionId) => {
   const response = await api.patch(`/transactions/${transactionId}/accept`);
   return response.data;
 };
-
-export const rejectTransaction = async (transactionId) => {
-  const response = await api.patch(`/transactions/${transactionId}/reject`);
-  return response.data;
-};

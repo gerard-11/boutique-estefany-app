@@ -30,7 +30,7 @@ export default function ClientTransactionsSection({
   isLoading,
   isActionLoading,
   onAccept,
-  onReject,
+  onRequestClarification,
 }) {
   return (
     <View style={styles.section}>
@@ -55,7 +55,7 @@ export default function ClientTransactionsSection({
             transaction={transaction}
             mode={activeTab}
             onAccept={onAccept}
-            onReject={onReject}
+            onRequestClarification={onRequestClarification}
             isActionLoading={isActionLoading}
           />
         ))

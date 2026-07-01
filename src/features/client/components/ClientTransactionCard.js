@@ -20,7 +20,7 @@ export default function ClientTransactionCard({
   transaction,
   mode,
   onAccept,
-  onReject,
+  onRequestClarification,
   isActionLoading,
 }) {
   const type = getTransactionType(transaction);
@@ -69,20 +69,22 @@ export default function ClientTransactionCard({
       )}
 
       {mode === 'PENDING' && (
-        <View style={styles.actionRow}>
+        <View>
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={styles.primaryAction}
+              onPress={() => onAccept(getTransactionId(transaction))}
+              disabled={isActionLoading}
+            >
+              <Text style={styles.primaryActionText}>Aceptar</Text>
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
-            style={styles.primaryAction}
-            onPress={() => onAccept(getTransactionId(transaction))}
+            style={styles.whatsappAction}
+            onPress={() => onRequestClarification(transaction)}
             disabled={isActionLoading}
           >
-            <Text style={styles.primaryActionText}>Aceptar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.secondaryAction, styles.dangerAction]}
-            onPress={() => onReject(getTransactionId(transaction))}
-            disabled={isActionLoading}
-          >
-            <Text style={[styles.secondaryActionText, styles.dangerActionText]}>Rechazar</Text>
+            <Text style={styles.whatsappActionText}>Solicitar aclaracion</Text>
           </TouchableOpacity>
         </View>
       )}

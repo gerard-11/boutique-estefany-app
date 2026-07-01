@@ -4,7 +4,6 @@ import {
   completeMyProfile,
   getMyProfile,
   getMyPaymentHistory,
-  rejectTransaction,
 } from '../services/clientPortalService';
 
 export const CLIENT_TRANSACTION_STATUSES = {
@@ -60,17 +59,6 @@ export const useAcceptTransaction = () => {
 
   return useMutation({
     mutationFn: acceptTransaction,
-    onSuccess: () => {
-      invalidateClientPortal(queryClient);
-    },
-  });
-};
-
-export const useRejectTransaction = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: rejectTransaction,
     onSuccess: () => {
       invalidateClientPortal(queryClient);
     },
