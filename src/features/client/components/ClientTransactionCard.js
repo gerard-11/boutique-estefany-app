@@ -10,6 +10,7 @@ import {
   getProducts,
   getTransactionId,
   getTransactionAmount,
+  getTransactionDate,
   getTransactionType,
   TRANSACTION_ICON_CONFIG,
 } from '../utils/clientPortalUtils';
@@ -37,7 +38,7 @@ export default function ClientTransactionCard({
 
         <View style={styles.transactionMain}>
           <Text style={styles.transactionTitle}>{TRANSACTION_TYPE_LABELS[type] || type}</Text>
-          <Text style={styles.transactionDate}>{formatDate(transaction?.createdAt)}</Text>
+          <Text style={styles.transactionDate}>{formatDate(getTransactionDate(transaction))}</Text>
         </View>
 
         <Text style={styles.transactionAmount}>{formatCurrency(amount)}</Text>

@@ -113,6 +113,10 @@ export const getTransactionType = (transaction) => (
   transaction?.type || (transaction?.amount !== undefined ? 'PAYMENT' : 'CASH')
 );
 
+export const getTransactionDate = (transaction) => (
+  transaction?.paymentDate || transaction?.createdAt || transaction?.transaction?.createdAt
+);
+
 export const getTransactionAmount = (transaction) => {
   if (transaction?.amount !== undefined && transaction?.totalAmount === undefined) {
     return Number(transaction.amountProcessed ?? transaction.amount ?? 0);
