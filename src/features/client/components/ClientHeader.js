@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../../theme';
 import { styles } from '../screens/ClientHomeScreen.styles';
 
-export default function ClientHeader({ client, displayName, email, paymentStatus, onSignOut }) {
+export default function ClientHeader({ client, displayName, email, onSignOut }) {
   return (
     <View style={styles.header}>
       <View style={styles.headerTop}>
@@ -27,18 +27,6 @@ export default function ClientHeader({ client, displayName, email, paymentStatus
           <MaterialCommunityIcons name="logout" size={18} color={theme.colors.primary} />
           <Text style={styles.logoutText}>Salir</Text>
         </TouchableOpacity>
-      </View>
-
-      <View style={styles.statusCard}>
-        <View style={styles.statusTop}>
-          <View>
-            <Text style={styles.statusLabel}>Estado de pago</Text>
-            <Text style={styles.statusValue}>{paymentStatus.config.label}</Text>
-          </View>
-          <View style={[styles.statusBadge, { backgroundColor: paymentStatus.config.color }]}>
-            <Text style={styles.statusBadgeText}>{paymentStatus.key}</Text>
-          </View>
-        </View>
       </View>
     </View>
   );

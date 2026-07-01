@@ -19,20 +19,22 @@ import {
 } from '../hooks/useClientPortal';
 import ClientHeader from '../components/ClientHeader';
 import ClientMetricsGrid from '../components/ClientMetricsGrid';
+import ClientPaymentStatusCard from '../components/ClientPaymentStatusCard';
 import ClientTabs from '../components/ClientTabs';
 import ClientTransactionsSection from '../components/ClientTransactionsSection';
 import ProfileFormModal from '../components/ProfileFormModal';
 import {
   CLIENT_HOME_TABS,
+  getActiveTransactions,
   getProfileTransactionsByStatus,
   getClientDisplayName,
   getHistoryItems,
-  getPaymentStatus,
   getServerMessage,
   getTransactionId,
   getTransactionProductTitle,
   getTransactionType,
 } from '../utils/clientPortalUtils';
+import { getClientPaymentStatus, getLastPaymentSummary } from '../utils/paymentStatusUtils';
 import { styles } from './ClientHomeScreen.styles';
 
 const SUPPORT_WHATSAPP_NUMBER = process.env.EXPO_PUBLIC_SUPPORT_WHATSAPP_NUMBER || '';
@@ -62,7 +64,10 @@ export default function ClientHomeScreen() {
   const financialSummary = client.financialSummary || {};
   const displayName = getClientDisplayName(client);
 
-  const paymentStatus = getPaymentStatus(client);
+  const paymentStatus = getClientPaymentStatus(client);
+  const lastPayment = useMemo(() => (
+    getLastPaymentSummary(client, paymentHistory)
+  ), [client, paymentHistory]);
 
   const profileInitialValues = useMemo(() => ({
     firstName: client.firstName || '',
@@ -71,14 +76,16 @@ export default function ClientHomeScreen() {
   }), [client.firstName, client.lastName, client.phoneNumber]);
 
   const transactionsByTab = useMemo(() => ({
-    ACTIVE: getProfileTransactionsByStatus(client, CLIENT_TRANSACTION_STATUSES.ACTIVE),
+    ACTIVE: getActiveTransactions(client, paymentHistory),
     PENDING: getProfileTransactionsByStatus(client, CLIENT_TRANSACTION_STATUSES.PENDING_APPROVAL),
     HISTORY: getHistoryItems(paymentHistory),
   }), [client, paymentHistory]);
 
   const isTabLoading = activeTab === 'HISTORY'
     ? isHistoryLoading && !paymentHistory
-    : isProfileLoading && !profile;
+    : activeTab === 'ACTIVE'
+      ? (isProfileLoading && !profile) || (isHistoryLoading && !paymentHistory)
+      : isProfileLoading && !profile;
 
   const isRefreshing = isProfileRefetching || isHistoryRefetching;
 
@@ -186,13 +193,15 @@ export default function ClientHomeScreen() {
           />
         }
       >
+
         <ClientHeader
           client={client}
           displayName={displayName}
           email={client.email || authProfile?.email}
-          paymentStatus={paymentStatus}
           onSignOut={signOut}
         />
+
+        <ClientPaymentStatusCard paymentStatus={paymentStatus} lastPayment={lastPayment} />
 
         <ClientMetricsGrid
           client={client}

@@ -6,15 +6,6 @@ export const CLIENT_HOME_TABS = [
   { id: 'HISTORY', label: 'Historial' },
 ];
 
-export const PAYMENT_STATUS_CONFIG = {
-  VERDE: { label: 'Al dia', color: theme.colors.success },
-  AMARILLO: { label: 'Pago pendiente', color: theme.colors.warning },
-  ROJO: { label: 'Atrasado', color: theme.colors.danger },
-  NORMAL: { label: 'Al dia', color: theme.colors.success },
-  RETRASADO: { label: 'Pago pendiente', color: theme.colors.warning },
-  ATRASADO: { label: 'Atrasado', color: theme.colors.danger },
-};
-
 export const TRANSACTION_ICON_CONFIG = {
   CASH: { name: 'cart-outline', color: theme.colors.info },
   WEEKLY_CREDIT: { name: 'calendar-clock', color: theme.colors.danger },
@@ -46,6 +37,35 @@ export const getArrayPayload = (payload) => {
   return [];
 };
 
+const getMovementDate = (item) => item?.paymentDate || item?.createdAt || item?.transaction?.createdAt;
+
+const getMovementKey = (item, index) => (
+  item?.id ||
+  item?.paymentId ||
+  item?.transactionId ||
+  item?.transaction?.id ||
+  [
+    item?.type,
+    getMovementDate(item),
+    item?.amount ?? item?.amountProcessed ?? item?.totalAmount,
+    index,
+  ].filter(Boolean).join('-')
+);
+
+const uniqueMovements = (items) => {
+  const itemsByKey = new Map();
+
+  items.filter(Boolean).forEach((item, index) => {
+    itemsByKey.set(String(getMovementKey(item, index)), item);
+  });
+
+  return Array.from(itemsByKey.values());
+};
+
+const sortMovementsDesc = (items) => (
+  items.sort((a, b) => new Date(getMovementDate(b) || 0) - new Date(getMovementDate(a) || 0))
+);
+
 const isTerminalTransaction = (transaction) => {
   const status = transaction?.status || transaction?.transaction?.status;
   const remainingBalance = Number(transaction?.remainingBalance ?? NaN);
@@ -67,9 +87,10 @@ export const getHistoryItems = (paymentHistory) => {
     paymentHistory?.payments,
   ].flatMap((group) => (Array.isArray(group) ? group : []));
 
-  const activeAccountEvents = Array.isArray(paymentHistory?.activeAccounts)
-    ? paymentHistory.activeAccounts
-    : [];
+  const activeAccountEvents = [
+    paymentHistory?.activeAccounts,
+    paymentHistory?.activeTransactions,
+  ].flatMap((group) => (Array.isArray(group) ? group : []));
 
   const purchaseEvents = [
     paymentHistory?.purchaseHistory,
@@ -82,8 +103,7 @@ export const getHistoryItems = (paymentHistory) => {
     .flatMap((group) => (Array.isArray(group) ? group : []))
     .filter(isTerminalTransaction);
 
-  return [...paymentEvents, ...activeAccountEvents, ...purchaseEvents]
-    .sort((a, b) => new Date(b.paymentDate || b.createdAt || 0) - new Date(a.paymentDate || a.createdAt || 0));
+  return sortMovementsDesc(uniqueMovements([...paymentEvents, ...activeAccountEvents, ...purchaseEvents]));
 };
 
 export const getProfileTransactionsByStatus = (profile, status) => {
@@ -101,10 +121,22 @@ export const getProfileTransactionsByStatus = (profile, status) => {
     ],
   };
 
-  const explicitGroup = (explicitGroupsByStatus[status] || []).find(Array.isArray);
-  if (explicitGroup) return explicitGroup;
+  const explicitTransactions = (explicitGroupsByStatus[status] || [])
+    .flatMap((group) => (Array.isArray(group) ? group : []));
+
+  if (explicitTransactions.length > 0) return uniqueMovements(explicitTransactions);
 
   return getArrayPayload(profile).filter((transaction) => transaction?.status === status);
+};
+
+export const getActiveTransactions = (profile, paymentHistory) => {
+  const profileActiveTransactions = getProfileTransactionsByStatus(profile, 'ACTIVE');
+  const historyActiveTransactions = [
+    paymentHistory?.activeAccounts,
+    paymentHistory?.activeTransactions,
+  ].flatMap((group) => (Array.isArray(group) ? group : []));
+
+  return uniqueMovements([...profileActiveTransactions, ...historyActiveTransactions]);
 };
 
 export const getProducts = (transaction) => {
@@ -185,14 +217,6 @@ export const getTransactionAmount = (transaction) => {
 export const getClientDisplayName = (client = {}) => (
   [client.firstName, client.lastName].filter(Boolean).join(' ') || client.name || 'Cliente'
 );
-
-export const getPaymentStatus = (client = {}) => {
-  const statusKey = client.trafficLight || client.paymentTrafficLight || client.paymentStatus || 'VERDE';
-  return {
-    key: statusKey,
-    config: PAYMENT_STATUS_CONFIG[statusKey] || PAYMENT_STATUS_CONFIG.VERDE,
-  };
-};
 
 export const getServerMessage = (error, fallback) => {
   const serverError = error?.response?.data;
