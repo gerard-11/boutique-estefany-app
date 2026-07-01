@@ -33,7 +33,7 @@ export default function AdminDashboardScreen({ navigation }) {
   };
 
 
-  return (
+    return (
     <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
