@@ -3,6 +3,7 @@ import {
   acceptTransaction,
   completeMyProfile,
   getMyProfile,
+  getMyPaymentHistory,
   rejectTransaction,
   requestTransactionReturn,
 } from '../services/clientPortalService';
@@ -15,6 +16,7 @@ export const CLIENT_TRANSACTION_STATUSES = {
 
 const clientPortalKeys = {
   profile: ['clientPortal', 'profile'],
+  paymentHistory: ['clientPortal', 'paymentHistory'],
 };
 
 const invalidateClientPortal = (queryClient) => {
@@ -26,6 +28,15 @@ export const useMyProfile = () => {
     queryKey: clientPortalKeys.profile,
     queryFn: getMyProfile,
     staleTime: 30 * 1000,
+  });
+};
+
+export const useMyPaymentHistory = () => {
+  return useQuery({
+    queryKey: clientPortalKeys.paymentHistory,
+    queryFn: getMyPaymentHistory,
+    staleTime: 30 * 1000,
+    placeholderData: (previousData) => previousData,
   });
 };
 

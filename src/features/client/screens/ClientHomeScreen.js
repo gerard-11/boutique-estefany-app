@@ -13,6 +13,7 @@ import {
   useAcceptTransaction,
   useCompleteMyProfile,
   useMyProfile,
+  useMyPaymentHistory,
   useRejectTransaction,
   useRequestTransactionReturn,
 } from '../hooks/useClientPortal';
@@ -24,7 +25,6 @@ import ProfileFormModal from '../components/ProfileFormModal';
 import {
   CLIENT_HOME_TABS,
   getProfileTransactionsByStatus,
-  getClientId,
   getClientDisplayName,
   getHistoryItems,
   getPaymentStatus,
@@ -43,6 +43,13 @@ export default function ClientHomeScreen() {
     isRefetching: isProfileRefetching,
     refetch: refetchProfile,
   } = useMyProfile();
+  const {
+    data: paymentHistory,
+    isLoading: isHistoryLoading,
+    isRefetching: isHistoryRefetching,
+    refetch: refetchHistory,
+  } = useMyPaymentHistory();
+
   const completeProfile = useCompleteMyProfile();
   const acceptTransaction = useAcceptTransaction();
   const rejectTransaction = useRejectTransaction();
@@ -51,7 +58,6 @@ export default function ClientHomeScreen() {
   const client = profile || authProfile || {};
   const financialSummary = client.financialSummary || {};
   const displayName = getClientDisplayName(client);
-  const clientId = getClientId(client);
 
   const paymentStatus = getPaymentStatus(client);
 
@@ -64,12 +70,14 @@ export default function ClientHomeScreen() {
   const transactionsByTab = useMemo(() => ({
     ACTIVE: getProfileTransactionsByStatus(client, CLIENT_TRANSACTION_STATUSES.ACTIVE),
     PENDING: getProfileTransactionsByStatus(client, CLIENT_TRANSACTION_STATUSES.PENDING_APPROVAL),
-    HISTORY: getHistoryItems(client),
-  }), [client]);
+    HISTORY: getHistoryItems(paymentHistory),
+  }), [client, paymentHistory]);
 
-  const isTabLoading = isProfileLoading && !profile;
+  const isTabLoading = activeTab === 'HISTORY'
+    ? isHistoryLoading && !paymentHistory
+    : isProfileLoading && !profile;
 
-  const isRefreshing = isProfileRefetching;
+  const isRefreshing = isProfileRefetching || isHistoryRefetching;
 
   const isActionLoading = (
     acceptTransaction.isPending ||
@@ -88,6 +96,7 @@ export default function ClientHomeScreen() {
 
   const handleRefresh = () => {
     refetchProfile();
+    refetchHistory();
   };
 
   const handleSaveProfile = (formValues) => {

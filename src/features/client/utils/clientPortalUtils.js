@@ -50,6 +50,8 @@ export const getHistoryItems = (paymentHistory) => {
   if (Array.isArray(paymentHistory)) return paymentHistory;
 
   const groups = [
+    paymentHistory?.paymentHistory,
+    paymentHistory?.purchaseHistory,
     paymentHistory?.payments,
     paymentHistory?.transactions,
     paymentHistory?.activeAccounts,
@@ -105,10 +107,6 @@ export const getProducts = (transaction) => {
 
 export const getTransactionId = (transaction) => (
   transaction?.id || transaction?.transactionId || transaction?.transaction?.id
-);
-
-export const getClientId = (client) => (
-  client?.id || client?.userId || client?.clientId
 );
 
 export const getTransactionType = (transaction) => (
