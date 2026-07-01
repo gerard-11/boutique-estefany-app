@@ -8,6 +8,7 @@ import {
   formatCurrency,
   formatDate,
   getProducts,
+  getTransactionId,
   getTransactionAmount,
   getTransactionType,
   TRANSACTION_ICON_CONFIG,
@@ -59,14 +60,14 @@ export default function ClientTransactionCard({
         <View style={styles.actionRow}>
           <TouchableOpacity
             style={styles.primaryAction}
-            onPress={() => onAccept(transaction.id)}
+            onPress={() => onAccept(getTransactionId(transaction))}
             disabled={isActionLoading}
           >
             <Text style={styles.primaryActionText}>Aceptar</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.secondaryAction, styles.dangerAction]}
-            onPress={() => onReject(transaction.id)}
+            onPress={() => onReject(getTransactionId(transaction))}
             disabled={isActionLoading}
           >
             <Text style={[styles.secondaryActionText, styles.dangerActionText]}>Rechazar</Text>
@@ -78,7 +79,7 @@ export default function ClientTransactionCard({
         <View style={styles.actionRow}>
           <TouchableOpacity
             style={styles.secondaryAction}
-            onPress={() => onRequestReturn(transaction.id)}
+            onPress={() => onRequestReturn(getTransactionId(transaction))}
             disabled={isActionLoading}
           >
             <Text style={styles.secondaryActionText}>Solicitar devolucion</Text>

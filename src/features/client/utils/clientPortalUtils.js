@@ -64,6 +64,27 @@ export const getHistoryItems = (paymentHistory) => {
     .sort((a, b) => new Date(b.paymentDate || b.createdAt || 0) - new Date(a.paymentDate || a.createdAt || 0));
 };
 
+export const getProfileTransactionsByStatus = (profile, status) => {
+  if (!profile) return [];
+
+  const explicitGroupsByStatus = {
+    ACTIVE: [
+      profile.activeAccounts,
+      profile.activeTransactions,
+    ],
+    PENDING_APPROVAL: [
+      profile.pendingTransactions,
+      profile.pendingApprovalTransactions,
+      profile.pendingAccounts,
+    ],
+  };
+
+  const explicitGroup = (explicitGroupsByStatus[status] || []).find(Array.isArray);
+  if (explicitGroup) return explicitGroup;
+
+  return getArrayPayload(profile).filter((transaction) => transaction?.status === status);
+};
+
 export const getProducts = (transaction) => {
   if (Array.isArray(transaction?.items)) {
     return transaction.items.map((item) => ({
@@ -81,6 +102,14 @@ export const getProducts = (transaction) => {
     price: product.priceAtTime ?? product.price,
   }));
 };
+
+export const getTransactionId = (transaction) => (
+  transaction?.id || transaction?.transactionId || transaction?.transaction?.id
+);
+
+export const getClientId = (client) => (
+  client?.id || client?.userId || client?.clientId
+);
 
 export const getTransactionType = (transaction) => (
   transaction?.type || (transaction?.amount !== undefined ? 'PAYMENT' : 'CASH')

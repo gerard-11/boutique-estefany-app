@@ -12,9 +12,7 @@ import {
   CLIENT_TRANSACTION_STATUSES,
   useAcceptTransaction,
   useCompleteMyProfile,
-  useMyPaymentHistory,
   useMyProfile,
-  useMyTransactions,
   useRejectTransaction,
   useRequestTransactionReturn,
 } from '../hooks/useClientPortal';
@@ -25,7 +23,8 @@ import ClientTransactionsSection from '../components/ClientTransactionsSection';
 import ProfileFormModal from '../components/ProfileFormModal';
 import {
   CLIENT_HOME_TABS,
-  getArrayPayload,
+  getProfileTransactionsByStatus,
+  getClientId,
   getClientDisplayName,
   getHistoryItems,
   getPaymentStatus,
@@ -44,25 +43,6 @@ export default function ClientHomeScreen() {
     isRefetching: isProfileRefetching,
     refetch: refetchProfile,
   } = useMyProfile();
-  const {
-    data: paymentHistory,
-    isLoading: isHistoryLoading,
-    isRefetching: isHistoryRefetching,
-    refetch: refetchHistory,
-  } = useMyPaymentHistory();
-  const {
-    data: activeTransactions,
-    isLoading: isActiveLoading,
-    isRefetching: isActiveRefetching,
-    refetch: refetchActive,
-  } = useMyTransactions(CLIENT_TRANSACTION_STATUSES.ACTIVE);
-  const {
-    data: pendingTransactions,
-    isLoading: isPendingLoading,
-    isRefetching: isPendingRefetching,
-    refetch: refetchPending,
-  } = useMyTransactions(CLIENT_TRANSACTION_STATUSES.PENDING_APPROVAL);
-
   const completeProfile = useCompleteMyProfile();
   const acceptTransaction = useAcceptTransaction();
   const rejectTransaction = useRejectTransaction();
@@ -71,6 +51,7 @@ export default function ClientHomeScreen() {
   const client = profile || authProfile || {};
   const financialSummary = client.financialSummary || {};
   const displayName = getClientDisplayName(client);
+  const clientId = getClientId(client);
 
   const paymentStatus = getPaymentStatus(client);
 
@@ -81,23 +62,14 @@ export default function ClientHomeScreen() {
   }), [client.firstName, client.lastName, client.phoneNumber]);
 
   const transactionsByTab = useMemo(() => ({
-    ACTIVE: getArrayPayload(activeTransactions),
-    PENDING: getArrayPayload(pendingTransactions),
-    HISTORY: getHistoryItems(paymentHistory),
-  }), [activeTransactions, paymentHistory, pendingTransactions]);
+    ACTIVE: getProfileTransactionsByStatus(client, CLIENT_TRANSACTION_STATUSES.ACTIVE),
+    PENDING: getProfileTransactionsByStatus(client, CLIENT_TRANSACTION_STATUSES.PENDING_APPROVAL),
+    HISTORY: getHistoryItems(client),
+  }), [client]);
 
-  const isTabLoading = (
-    (activeTab === 'ACTIVE' && isActiveLoading) ||
-    (activeTab === 'PENDING' && isPendingLoading) ||
-    (activeTab === 'HISTORY' && isHistoryLoading)
-  );
+  const isTabLoading = isProfileLoading && !profile;
 
-  const isRefreshing = (
-    isProfileRefetching ||
-    isHistoryRefetching ||
-    isActiveRefetching ||
-    isPendingRefetching
-  );
+  const isRefreshing = isProfileRefetching;
 
   const isActionLoading = (
     acceptTransaction.isPending ||
@@ -116,9 +88,6 @@ export default function ClientHomeScreen() {
 
   const handleRefresh = () => {
     refetchProfile();
-    refetchHistory();
-    refetchActive();
-    refetchPending();
   };
 
   const handleSaveProfile = (formValues) => {
@@ -141,6 +110,11 @@ export default function ClientHomeScreen() {
   };
 
   const handleAccept = (transactionId) => {
+    if (!transactionId) {
+      Alert.alert('Error', 'No se pudo identificar la venta.');
+      return;
+    }
+
     acceptTransaction.mutate(transactionId, {
       onSuccess: () => Alert.alert('Venta aceptada', 'La venta a credito quedo activa.'),
       onError: (error) => Alert.alert('Error', getServerMessage(error, 'No se pudo aceptar la venta.')),
