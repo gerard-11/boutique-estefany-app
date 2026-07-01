@@ -86,6 +86,7 @@ export const styles = StyleSheet.create({
     fontWeight: '800',
   },
   statusCard: {
+    marginHorizontal: 20,
     marginTop: 18,
     padding: 14,
     borderRadius: 12,
@@ -118,6 +119,37 @@ export const styles = StyleSheet.create({
   statusBadgeText: {
     color: theme.colors.white,
     fontSize: 11,
+    fontWeight: '800',
+  },
+  lastPaymentBox: {
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  lastPaymentTitle: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  lastPaymentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  lastPaymentDateBlock: {
+    alignItems: 'flex-end',
+  },
+  lastPaymentLabel: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  lastPaymentValue: {
+    fontSize: 14,
+    color: theme.colors.text,
     fontWeight: '800',
   },
   section: {
