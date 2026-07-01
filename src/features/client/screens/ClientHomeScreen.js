@@ -71,7 +71,14 @@ export default function ClientHomeScreen() {
   const client = profile || authProfile || {};
   const financialSummary = client.financialSummary || {};
   const displayName = getClientDisplayName(client);
+
   const paymentStatus = getPaymentStatus(client);
+
+  const profileInitialValues = useMemo(() => ({
+    firstName: client.firstName || '',
+    lastName: client.lastName || '',
+    phoneNumber: client.phoneNumber || '',
+  }), [client.firstName, client.lastName, client.phoneNumber]);
 
   const transactionsByTab = useMemo(() => ({
     ACTIVE: getArrayPayload(activeTransactions),
@@ -120,7 +127,6 @@ export default function ClientHomeScreen() {
         firstName: formValues.firstName.trim(),
         lastName: formValues.lastName.trim(),
         phoneNumber: formValues.phoneNumber.trim(),
-        avatarUrl: formValues.avatarUrl.trim(),
       },
       {
         onSuccess: () => {
@@ -233,12 +239,7 @@ export default function ClientHomeScreen() {
 
       <ProfileFormModal
         visible={isProfileFormVisible}
-        initialValues={{
-          firstName: client.firstName || '',
-          lastName: client.lastName || '',
-          phoneNumber: client.phoneNumber || '',
-          avatarUrl: client.avatarUrl || '',
-        }}
+        initialValues={profileInitialValues}
         isSaving={completeProfile.isPending}
         onClose={closeProfileForm}
         onSave={handleSaveProfile}

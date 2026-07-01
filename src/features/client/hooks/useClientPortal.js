@@ -56,7 +56,12 @@ export const useCompleteMyProfile = () => {
 
   return useMutation({
     mutationFn: completeMyProfile,
-    onSuccess: () => {
+    onSuccess: (updatedProfile) => {
+      queryClient.setQueryData(clientPortalKeys.profile, (currentProfile) => ({
+        ...currentProfile,
+        ...updatedProfile,
+        financialSummary: updatedProfile?.financialSummary ?? currentProfile?.financialSummary,
+      }));
       invalidateClientPortal(queryClient);
     },
   });

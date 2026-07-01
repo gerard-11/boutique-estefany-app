@@ -15,7 +15,6 @@ const EMPTY_PROFILE_VALUES = {
   firstName: '',
   lastName: '',
   phoneNumber: '',
-  avatarUrl: '',
 };
 
 export default function ProfileFormModal({
@@ -99,22 +98,6 @@ export default function ProfileFormModal({
                 onChangeText={onChange}
                 placeholder="+525512345678"
                 keyboardType="phone-pad"
-              />
-            )}
-          />
-
-          <Text style={styles.inputLabel}>Avatar URL</Text>
-          <Controller
-            control={control}
-            name="avatarUrl"
-            render={({ field: { onChange, value } }) => (
-              <TextInput
-                style={styles.input}
-                value={value}
-                onChangeText={onChange}
-                placeholder="https://..."
-                autoCapitalize="none"
-                keyboardType="url"
               />
             )}
           />
