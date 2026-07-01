@@ -6,7 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 import { styles } from './CustomDrawerContent.styles';
 
 export default function CustomDrawerContent(props) {
-  const { logout } = useContext(AuthContext);
+  const { signOut } = useContext(AuthContext);
   
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={styles.drawerContent}>
@@ -23,7 +23,7 @@ export default function CustomDrawerContent(props) {
           icon={({ color, size }) => (
             <MaterialCommunityIcons name="logout" color={color} size={size} />
           )}
-          onPress={logout}
+          onPress={signOut}
           inactiveTintColor="#e74c3c"
           labelStyle={styles.logoutLabel}
         />

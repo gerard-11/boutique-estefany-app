@@ -32,8 +32,8 @@ export default function AdminDashboardScreen({ navigation }) {
     liquidezDia: data?.todayLiquidity ?? 0
   };
 
-console.log('Metrics:', metrics);
-  return (
+
+    return (
     <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
