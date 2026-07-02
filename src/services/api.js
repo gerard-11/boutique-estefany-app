@@ -1,7 +1,9 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.75:3000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://boutique-estefany-backend.onrender.com';
+
+console.log('API_URL:', API_URL);
 
 const api = axios.create({
   baseURL: API_URL,
