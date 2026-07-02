@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { useClientEnrichedProfile, useClientPaymentHistory, useUpdateFinancial } from '../../hooks/useClients';
 import { useCreatePayment } from '../../hooks/usePayments';
@@ -69,6 +70,7 @@ export default function ClientDetailScreen({ route, navigation }) {
   const [selectedLevel, setSelectedLevel] = useState('BRONCE');
   const [creditLimitInput, setCreditLimitInput] = useState('0');
   const [financialReason, setFinancialReason] = useState('');
+  const keyboardVisibleRef = useRef(false);
 
 
   const { 
@@ -92,6 +94,20 @@ export default function ClientDetailScreen({ route, navigation }) {
   const currentDebt = profile?.financialSummary?.currentDebt || 0;
   const debtAfterPayment = Math.max(currentDebt - (Number.isFinite(paymentValue) ? paymentValue : 0), 0);
 
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      keyboardVisibleRef.current = true;
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      keyboardVisibleRef.current = false;
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   const closePaymentForm = () => {
     if (isSavingPayment) return;
     setPaymentFormVisible(false);
@@ -110,6 +126,24 @@ export default function ClientDetailScreen({ route, navigation }) {
     setFinancialFormVisible(false);
     setFinancialReason("");
   };
+
+  const handlePaymentRequestClose = useCallback(() => {
+    if (keyboardVisibleRef.current) {
+      Keyboard.dismiss();
+      return;
+    }
+
+    closePaymentForm();
+  }, [isSavingPayment]);
+
+  const handleFinancialRequestClose = useCallback(() => {
+    if (keyboardVisibleRef.current) {
+      Keyboard.dismiss();
+      return;
+    }
+
+    closeFinancialForm();
+  }, [isSavingFinancial]);
 
   const handleUpdateFinancial = () => {
     const creditLimit = parsePaymentAmount(creditLimitInput);
@@ -313,7 +347,7 @@ export default function ClientDetailScreen({ route, navigation }) {
         visible={isPaymentFormVisible}
         transparent
         animationType="slide"
-        onRequestClose={closePaymentForm}
+        onRequestClose={handlePaymentRequestClose}
       >
         <KeyboardAvoidingView
           style={styles.paymentModalOverlay}
@@ -371,7 +405,7 @@ export default function ClientDetailScreen({ route, navigation }) {
         visible={isFinancialFormVisible}
         transparent
         animationType="slide"
-        onRequestClose={closeFinancialForm}
+        onRequestClose={handleFinancialRequestClose}
       >
         <KeyboardAvoidingView
           style={styles.paymentModalOverlay}
