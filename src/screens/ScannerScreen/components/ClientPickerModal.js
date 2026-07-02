@@ -2,6 +2,7 @@ import React from 'react';
 import { ActivityIndicator, Modal, View, FlatList, TouchableOpacity, Text, TextInput } from 'react-native';
 import { styles } from '../ScannerScreen.styles';
 import { theme } from '../../../theme';
+import { useKeyboardAwareRequestClose } from '../../../hooks/useKeyboardAwareRequestClose';
 
 export const ClientPickerModal = ({
   visible,
@@ -12,8 +13,10 @@ export const ClientPickerModal = ({
   onSelectClient,
   onClose,
 }) => {
+  const handleRequestClose = useKeyboardAwareRequestClose(onClose);
+
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleRequestClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.clientPickerSheet}>
           <TextInput

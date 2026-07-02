@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { styles } from './ProductCashSaleModal.styles';
+import { useKeyboardAwareRequestClose } from '../hooks/useKeyboardAwareRequestClose';
 
 const getClientName = (client) => (
   client?.name || `${client?.firstName || ''} ${client?.lastName || ''}`.trim()
@@ -17,12 +18,15 @@ export const ProductCashSaleModal = ({
   onSubmit,
   onClose,
   formatCurrency,
-}) => (
+}) => {
+  const handleRequestClose = useKeyboardAwareRequestClose(onClose);
+
+  return (
   <Modal
     visible={visible}
     animationType="slide"
     transparent
-    onRequestClose={onClose}
+    onRequestClose={handleRequestClose}
   >
     <View style={styles.modalOverlay}>
       <View style={styles.cashSaleSheet}>
@@ -70,4 +74,5 @@ export const ProductCashSaleModal = ({
       </View>
     </View>
   </Modal>
-);
+  );
+};
