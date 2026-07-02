@@ -487,7 +487,8 @@ export const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   financialReasonInput: {
-    minHeight: 88,
+    height: 92,
+    maxHeight: 92,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: 12,

@@ -457,6 +457,11 @@ export default function ClientDetailScreen({ route, navigation }) {
               onChangeText={setFinancialReason}
               placeholder="Ej. Buen historial de pagos"
               multiline
+              numberOfLines={3}
+              scrollEnabled
+              blurOnSubmit
+              returnKeyType="done"
+              onSubmitEditing={Keyboard.dismiss}
               textAlignVertical="top"
               editable={!isSavingFinancial}
             />
