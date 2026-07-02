@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "boutique-estefany-app",
+    "name": "Boutique Estefany",
     "slug": "boutique-estefany",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icono.png",
     "userInterfaceStyle": "light",
     "jsEngine": "hermes",
     "newArchEnabled": true,
     "scheme": "boutique-estefany",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icono.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -22,7 +22,7 @@
       "package": "com.gerardorito.boutiqueestefany",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icono.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
@@ -32,7 +32,8 @@
     },
     "plugins": [
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      "@react-native-google-signin/google-signin"
     ],
     "extra": {
       "eas": {

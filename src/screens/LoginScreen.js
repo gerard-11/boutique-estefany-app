@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,6 @@ import {
   TextInput,
   ScrollView
 } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
 import {
   GoogleAuthProvider,
   signInWithCredential,
@@ -21,12 +19,22 @@ import { AuthContext } from '../context/AuthContext';
 import { auth } from '../services/firebaseConfig';
 import { styles } from './LoginScreen.styles';
 
-WebBrowser.maybeCompleteAuthSession();
-
 const getConfiguredClientId = (value) => {
   if (!value || value.startsWith('TU_')) return undefined;
   return value;
 };
+
+const getGoogleSignInModule = () => {
+  try {
+    return require('@react-native-google-signin/google-signin');
+  } catch (error) {
+    return null;
+  }
+};
+
+const googleSignInModule = getGoogleSignInModule();
+const GoogleSignin = googleSignInModule?.GoogleSignin;
+const googleStatusCodes = googleSignInModule?.statusCodes || {};
 
 const AUTH_MODES = {
   LOGIN: 'LOGIN',
@@ -57,7 +65,6 @@ const getEmailAuthErrorMessage = (error, isRegisterMode) => {
 export default function LoginScreen() {
   const {
     GOOGLE_WEB_CLIENT_ID,
-    GOOGLE_ANDROID_CLIENT_ID,
     GOOGLE_IOS_CLIENT_ID,
     authError,
   } = useContext(AuthContext);
@@ -68,52 +75,57 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
 
   const googleWebClientId = getConfiguredClientId(GOOGLE_WEB_CLIENT_ID);
-  const googleAndroidClientId = getConfiguredClientId(GOOGLE_ANDROID_CLIENT_ID);
   const googleIosClientId = getConfiguredClientId(GOOGLE_IOS_CLIENT_ID);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: googleWebClientId,
-    androidClientId: googleAndroidClientId,
-    iosClientId: googleIosClientId,
-    scopes: ['profile', 'email'],
-  });
-
   useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.params;
+    if (!GoogleSignin || !googleWebClientId) return;
 
-      if (!id_token) {
-        console.error('Google Auth Error: No se recibió id_token', response);
-        Alert.alert('Error', 'Google no devolvió un token válido. Revisa el Client ID de esta plataforma.');
-        setLoading(false);
-        return;
-      }
-
-      const credential = GoogleAuthProvider.credential(id_token);
-      
-      setLoading(true);
-      signInWithCredential(auth, credential)
-        .catch(error => {
-          console.error('Firebase Auth Error:', error);
-          Alert.alert('Error', 'No se pudo conectar con Firebase');
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
-  }, [response]);
+    GoogleSignin.configure({
+      webClientId: googleWebClientId,
+      iosClientId: googleIosClientId,
+      offlineAccess: false,
+    });
+  }, [googleIosClientId, googleWebClientId]);
 
   const handleGoogleLogin = async () => {
-    if (!request) {
-      Alert.alert('Cargando...', 'La configuración de Google aún no está lista. Reintenta en 1 segundo.');
+    if (!GoogleSignin) {
+      Alert.alert('Google no disponible', 'El login con Google requiere instalar el APK o usar una development build.');
+      return;
+    }
+
+    if (!googleWebClientId) {
+      Alert.alert('Error', 'Falta configurar el Google Web Client ID.');
       return;
     }
 
     setLoading(true);
     try {
-      await promptAsync();
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      const signInResponse = await GoogleSignin.signIn();
+
+      if (signInResponse.type !== 'success') {
+        setLoading(false);
+        return;
+      }
+
+      const idToken = signInResponse.data?.idToken;
+
+      if (!idToken) {
+        Alert.alert('Error', 'Google no devolvió un token válido.');
+        setLoading(false);
+        return;
+      }
+
+      const credential = GoogleAuthProvider.credential(idToken);
+      await signInWithCredential(auth, credential);
     } catch (error) {
-      console.error('Prompt Error:', error);
+      if (error?.code === googleStatusCodes.SIGN_IN_CANCELLED) {
+        setLoading(false);
+        return;
+      }
+
+      console.error('Google Sign-In Error:', error);
+      Alert.alert('Error', 'No se pudo iniciar sesión con Google.');
       setLoading(false);
     }
   };
@@ -170,7 +182,7 @@ export default function LoginScreen() {
       <View style={styles.content}>
         <View style={styles.logoContainer}>
           <Image
-            source={{ uri: 'https://picsum.photos/200' }}
+            source={require('../../assets/icono.png')}
             style={styles.logo}
           />
           <Text style={styles.title}>Boutique Estefany</Text>
@@ -181,9 +193,9 @@ export default function LoginScreen() {
           {!emailAuthVisible ? (
             <>
               <TouchableOpacity
-                style={[styles.googleButton, (loading || !request) && styles.disabledButton]}
+                style={[styles.googleButton, loading && styles.disabledButton]}
                 onPress={handleGoogleLogin}
-                disabled={loading || !request}
+                disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator color="#fff" />
