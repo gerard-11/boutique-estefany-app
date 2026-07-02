@@ -72,6 +72,7 @@ export default function ScannerScreen({ navigation }) {
   } = useScannerStore();
 
   const [permission, requestPermission] = useCameraPermissions();
+  const keyboardVisibleRef = useRef(false);
   const [isTorchOn, setTorchOn] = useState(false);
   const [scanFeedback, setScanFeedback] = useState('Centra el código completo dentro de la guía.');
   const pendingScanRef = useRef({ code: null, count: 0, updatedAt: 0 });
@@ -179,10 +180,24 @@ export default function ScannerScreen({ navigation }) {
     );
   }, [departmentsData, watchDeptId]);
 
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      keyboardVisibleRef.current = true;
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      keyboardVisibleRef.current = false;
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   // --- Seguridad de Navegación ---
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      if (Keyboard.isVisible()) {
+      if (keyboardVisibleRef.current) {
         Keyboard.dismiss();
         e.preventDefault();
         return;
@@ -213,7 +228,7 @@ export default function ScannerScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        if (Keyboard.isVisible()) {
+        if (keyboardVisibleRef.current) {
           Keyboard.dismiss();
           return true;
         }

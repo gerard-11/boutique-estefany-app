@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { auth } from './firebaseConfig';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://boutique-estefany-backend.onrender.com';
 
@@ -15,7 +16,13 @@ api.interceptors.request.use(
     try {
       if (config.skipAuth) return config;
       
-      const token = await SecureStore.getItemAsync('userToken');
+      let token = await SecureStore.getItemAsync('userToken');
+
+      if (!token && auth.currentUser) {
+        token = await auth.currentUser.getIdToken();
+        await SecureStore.setItemAsync('userToken', token);
+      }
+
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
