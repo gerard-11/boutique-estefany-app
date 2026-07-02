@@ -36,6 +36,16 @@ const googleSignInModule = getGoogleSignInModule();
 const GoogleSignin = googleSignInModule?.GoogleSignin;
 const googleStatusCodes = googleSignInModule?.statusCodes || {};
 
+const getGoogleIdToken = async (signInResponse) => {
+  if (signInResponse?.type === 'cancelled') return null;
+
+  const responseToken = signInResponse?.data?.idToken || signInResponse?.idToken;
+  if (responseToken) return responseToken;
+
+  const tokenResponse = await GoogleSignin?.getTokens?.();
+  return tokenResponse?.idToken;
+};
+
 const AUTH_MODES = {
   LOGIN: 'LOGIN',
   REGISTER: 'REGISTER',
@@ -67,6 +77,7 @@ export default function LoginScreen() {
     GOOGLE_WEB_CLIENT_ID,
     GOOGLE_IOS_CLIENT_ID,
     authError,
+    signIn: syncAuthenticatedUser,
   } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [emailAuthVisible, setEmailAuthVisible] = useState(false);
@@ -103,29 +114,30 @@ export default function LoginScreen() {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const signInResponse = await GoogleSignin.signIn();
 
-      if (signInResponse.type !== 'success') {
-        setLoading(false);
+      if (signInResponse?.type === 'cancelled') {
         return;
       }
 
-      const idToken = signInResponse.data?.idToken;
+      const idToken = await getGoogleIdToken(signInResponse);
 
       if (!idToken) {
-        Alert.alert('Error', 'Google no devolvió un token válido.');
-        setLoading(false);
+        console.warn('Google Sign-In did not return an idToken:', signInResponse);
+        Alert.alert('Error', 'Google no devolvió un token válido. Intenta elegir la cuenta otra vez.');
         return;
       }
 
       const credential = GoogleAuthProvider.credential(idToken);
-      await signInWithCredential(auth, credential);
+      const userCredential = await signInWithCredential(auth, credential);
+      await syncAuthenticatedUser(userCredential.user);
     } catch (error) {
       if (error?.code === googleStatusCodes.SIGN_IN_CANCELLED) {
-        setLoading(false);
         return;
       }
 
+      await GoogleSignin.signOut().catch(() => {});
       console.error('Google Sign-In Error:', error);
-      Alert.alert('Error', 'No se pudo iniciar sesión con Google.');
+      Alert.alert('Error', error?.message || 'No se pudo iniciar sesión con Google.');
+    } finally {
       setLoading(false);
     }
   };
@@ -147,13 +159,18 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       if (isRegisterMode) {
-        await createUserWithEmailAndPassword(auth, normalizedEmail, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
+        await syncAuthenticatedUser(userCredential.user);
       } else {
-        await signInWithEmailAndPassword(auth, normalizedEmail, password);
+        const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+        await syncAuthenticatedUser(userCredential.user);
       }
     } catch (error) {
       console.error('Email Auth Error:', error);
-      Alert.alert('Error', getEmailAuthErrorMessage(error, isRegisterMode));
+      const message = error?.code?.startsWith('auth/')
+        ? getEmailAuthErrorMessage(error, isRegisterMode)
+        : error?.message || getEmailAuthErrorMessage(error, isRegisterMode);
+      Alert.alert('Error', message);
     } finally {
       setLoading(false);
     }
@@ -161,6 +178,11 @@ export default function LoginScreen() {
 
   const showLoginForm = () => {
     setAuthMode(AUTH_MODES.LOGIN);
+    setEmailAuthVisible(true);
+  };
+
+  const showRegisterForm = () => {
+    setAuthMode(AUTH_MODES.REGISTER);
     setEmailAuthVisible(true);
   };
 
@@ -192,6 +214,7 @@ export default function LoginScreen() {
         <View style={styles.authContainer}>
           {!emailAuthVisible ? (
             <>
+              <Text style={styles.authHeading}>Crear cuenta</Text>
               <TouchableOpacity
                 style={[styles.googleButton, loading && styles.disabledButton]}
                 onPress={handleGoogleLogin}
@@ -201,13 +224,34 @@ export default function LoginScreen() {
                   <ActivityIndicator color="#fff" />
                 ) : (
                   <View style={styles.buttonInner}>
-                    <Text style={styles.googleButtonText}>Continuar con Google</Text>
+                    <Text style={styles.googleButtonText}>Crear cuenta con Google</Text>
                   </View>
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={showLoginForm} disabled={loading}>
-                <Text style={styles.emailAuthToggleText}>Entrar con correo</Text>
+              <TouchableOpacity
+                style={[styles.secondaryButton, loading && styles.disabledButton]}
+                onPress={showRegisterForm}
+                disabled={loading}
+              >
+                <Text style={styles.secondaryButtonText}>Crear cuenta con correo</Text>
+              </TouchableOpacity>
+
+              <Text style={[styles.authHeading, styles.loginHeading]}>Ya tengo cuenta</Text>
+              <TouchableOpacity
+                style={[styles.outlineButton, loading && styles.disabledButton]}
+                onPress={handleGoogleLogin}
+                disabled={loading}
+              >
+                <Text style={styles.outlineButtonText}>Iniciar sesión con Google</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.outlineButton, loading && styles.disabledButton]}
+                onPress={showLoginForm}
+                disabled={loading}
+              >
+                <Text style={styles.outlineButtonText}>Iniciar sesión con correo</Text>
               </TouchableOpacity>
 
               <Text style={styles.footerText}>
@@ -217,7 +261,7 @@ export default function LoginScreen() {
           ) : (
             <>
               <Text style={styles.emailAuthTitle}>
-                {isRegisterMode ? 'Crear cuenta' : 'Entrar con correo'}
+                {isRegisterMode ? 'Crear cuenta con correo' : 'Iniciar sesión con correo'}
               </Text>
 
               {authError && (
@@ -261,12 +305,12 @@ export default function LoginScreen() {
 
               <TouchableOpacity onPress={toggleEmailAuthMode} disabled={loading}>
                 <Text style={styles.emailAuthToggleText}>
-                  {isRegisterMode ? 'Ya tengo cuenta' : 'Crear cuenta nueva'}
+                  {isRegisterMode ? 'Iniciar sesión con cuenta existente' : 'Crear cuenta nueva'}
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={hideEmailAuth} disabled={loading}>
-                <Text style={styles.emailAuthToggleText}>Volver a Google</Text>
+                <Text style={styles.emailAuthToggleText}>Volver a opciones</Text>
               </TouchableOpacity>
             </>
           )}

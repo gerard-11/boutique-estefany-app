@@ -6,9 +6,47 @@ import api from '../services/api';
 
 export const AuthContext = createContext();
 
-const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
-const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+const GOOGLE_CLIENT_IDS = {
+  web: '849272336378-oj2d2pne63jc3tnlhplbbaftf2hutlqo.apps.googleusercontent.com',
+  android: '849272336378-c7pb0j4o4ebj6bmknqee7tkgtkrcbvmg.apps.googleusercontent.com',
+  ios: '849272336378-tuib75770io9ve58suvgp1uqnu4t178o.apps.googleusercontent.com',
+};
+
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || GOOGLE_CLIENT_IDS.web;
+const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || GOOGLE_CLIENT_IDS.android;
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || GOOGLE_CLIENT_IDS.ios;
+
+const getAuthHeaders = (token) => ({
+  headers: {
+    Authorization: 'Bearer ' + token,
+  },
+});
+
+const getProfileSyncErrorMessage = (error) => {
+  if (error?.response?.status === 401) {
+    return "Firebase inició sesión, pero el backend rechazó el token.";
+  }
+
+  if (error?.response?.status === 403) {
+    return "Tu usuario existe, pero no tiene permisos para entrar.";
+  }
+
+  if (error?.response?.data?.message) {
+    return Array.isArray(error.response.data.message)
+      ? error.response.data.message.join("\n")
+      : error.response.data.message;
+  }
+
+  if (error?.code === "ECONNABORTED") {
+    return "El backend tardó demasiado en responder. Intenta de nuevo.";
+  }
+
+  if (error?.message === "Network Error") {
+    return "No se pudo conectar con el backend. Revisa internet o la URL de API.";
+  }
+
+  return error?.message || "No se pudo validar tu perfil con el backend.";
+};
 
 export const AuthProvider = ({ children }) => {
   const profileSyncInFlightRef = useRef(false);
@@ -32,7 +70,7 @@ export const AuthProvider = ({ children }) => {
           user: null,
           userToken: null,
           profile: null,
-          authError: null,
+          authError: s.authError,
           isLoading: false,
         }));
         return;
@@ -51,7 +89,7 @@ export const AuthProvider = ({ children }) => {
           userToken = await user.getIdToken();
           await SecureStore.setItemAsync('userToken', userToken);
 
-          const response = await api.get('/auth/me');
+          const response = await api.get('/auth/me', getAuthHeaders(userToken));
           profile = response.data;
         } else {
           await SecureStore.deleteItemAsync('userToken');
@@ -62,9 +100,10 @@ export const AuthProvider = ({ children }) => {
         currentUser = null;
         userToken = null;
         profile = null;
-        authError = null;
+        authError = getProfileSyncErrorMessage(e);
         await SecureStore.deleteItemAsync('userToken');
         await auth.signOut().catch(() => {});
+        clearingPersistedSessionRef.current = false;
       } finally {
         profileSyncInFlightRef.current = false;
       }
@@ -85,9 +124,39 @@ export const AuthProvider = ({ children }) => {
   const authContext = useMemo(
     () => ({
       signIn: async (firebaseUser) => {
-        const token = await firebaseUser.getIdToken();
-        await SecureStore.setItemAsync('userToken', token);
-        setState(s => ({ ...s, userToken: token, user: firebaseUser, authError: null, isSignout: false }));
+        profileSyncInFlightRef.current = true;
+        try {
+          const token = await firebaseUser.getIdToken(true);
+          await SecureStore.setItemAsync('userToken', token);
+          const response = await api.get('/auth/me', getAuthHeaders(token));
+
+          setState(s => ({
+            ...s,
+            userToken: token,
+            user: firebaseUser,
+            profile: response.data,
+            authError: null,
+            isSignout: false,
+            isLoading: false,
+          }));
+        } catch (e) {
+          console.warn('Login profile sync failed:', e?.response?.data || e.message);
+          const authError = getProfileSyncErrorMessage(e);
+          await SecureStore.deleteItemAsync('userToken');
+          await auth.signOut().catch(() => {});
+          setState(s => ({
+            ...s,
+            userToken: null,
+            user: null,
+            profile: null,
+            authError,
+            isSignout: true,
+            isLoading: false,
+          }));
+          throw new Error(authError);
+        } finally {
+          profileSyncInFlightRef.current = false;
+        }
       },
       signOut: async () => {
         try {
