@@ -13,6 +13,14 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { styles } from '../ScannerScreen.styles';
 import { theme } from '../../../theme';
 
+const FormField = ({ label, error, children, style }) => (
+  <View style={[styles.inputGroup, style]}>
+    <Text style={styles.label}>{label}</Text>
+    {children}
+    {error && <Text style={styles.errorText}>{error.message}</Text>}
+  </View>
+);
+
 export const NewProductForm = ({ barcode, isSaving, onSave, onCancel, onOpenPicker, watchDeptId, watchCatId, watchDeptName, watchCatName }) => {
   const { control, handleSubmit, formState: { errors } } = useFormContext();
 
@@ -21,82 +29,96 @@ export const NewProductForm = ({ barcode, isSaving, onSave, onCancel, onOpenPick
       <ScrollView style={styles.resultsContainer} keyboardShouldPersistTaps="handled">
         <Text style={styles.resultTitle}>Nuevo Producto</Text>
         <View style={styles.form}>
-          <TextInput
-            style={[styles.input, styles.readOnlyInput]}
-            value={barcode || 'Código automático'}
-            editable={false}
-          />
+          <FormField label="Código">
+            <TextInput
+              style={[styles.input, styles.readOnlyInput]}
+              value={barcode || 'Código automático'}
+              editable={false}
+            />
+          </FormField>
           
           <Controller
             control={control}
             name="name"
             render={({ field: { onChange, onBlur, value } }) => (
-              <View>
-                <TextInput 
-                  style={[styles.input, errors.name && { borderColor: '#ff4444' }]} 
-                  placeholder="Nombre *" 
+              <FormField label="Nombre *" error={errors.name}>
+                <TextInput
+                  style={[styles.input, errors.name && styles.inputError]}
+                  placeholder="Ej. Blusa floral"
+                  placeholderTextColor={theme.colors.textMuted}
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
                 />
-                {errors.name && <Text style={styles.errorText}>{errors.name.message}</Text>}
-              </View>
+              </FormField>
             )}
           />
 
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <View style={{ flex: 1 }}>
+          <View style={styles.formRow}>
+            <View style={styles.formColumn}>
               <Controller
                 control={control}
                 name="cost"
                 render={({ field: { onChange, value } }) => (
-                  <TextInput 
-                    style={[styles.input, errors.cost && { borderColor: '#ff4444' }]} 
-                    placeholder="Costo *" 
-                    keyboardType="decimal-pad"
-                    onChangeText={onChange}
-                    value={value}
-                  />
+                  <FormField label="Costo *" error={errors.cost}>
+                    <TextInput
+                      style={[styles.input, errors.cost && styles.inputError]}
+                      placeholder="0.00"
+                      placeholderTextColor={theme.colors.textMuted}
+                      keyboardType="decimal-pad"
+                      onChangeText={onChange}
+                      value={value}
+                    />
+                  </FormField>
                 )}
               />
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={styles.formColumn}>
               <Controller
                 control={control}
                 name="price"
                 render={({ field: { onChange, value } }) => (
-                  <TextInput 
-                    style={[styles.input, errors.price && { borderColor: '#ff4444' }]} 
-                    placeholder="Precio *" 
-                    keyboardType="decimal-pad"
-                    onChangeText={onChange}
-                    value={value}
-                  />
+                  <FormField label="Precio *" error={errors.price}>
+                    <TextInput
+                      style={[styles.input, errors.price && styles.inputError]}
+                      placeholder="0.00"
+                      placeholderTextColor={theme.colors.textMuted}
+                      keyboardType="decimal-pad"
+                      onChangeText={onChange}
+                      value={value}
+                    />
+                  </FormField>
                 )}
               />
             </View>
           </View>
 
-          <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={styles.formRow}>
             <Controller
               control={control}
               name="size"
               render={({ field: { onChange, value } }) => (
-                <TextInput style={[styles.input, { flex: 1.5 }]} placeholder="Talla" onChangeText={onChange} value={value} />
+                <FormField label="Talla" style={styles.formColumn}>
+                  <TextInput style={styles.input} placeholder="Ej. M" placeholderTextColor={theme.colors.textMuted} onChangeText={onChange} value={value} />
+                </FormField>
               )}
             />
             <Controller
               control={control}
               name="sizeUnit"
               render={({ field: { onChange, value } }) => (
-                <TextInput style={[styles.input, { flex: 1 }]} placeholder="Unidad" onChangeText={onChange} value={value} />
+                <FormField label="Unidad" style={styles.formColumn}>
+                  <TextInput style={styles.input} placeholder="MX/US" placeholderTextColor={theme.colors.textMuted} onChangeText={onChange} value={value} />
+                </FormField>
               )}
             />
             <Controller
               control={control}
               name="color"
               render={({ field: { onChange, value } }) => (
-                <TextInput style={[styles.input, { flex: 1.5 }]} placeholder="Color" onChangeText={onChange} value={value} />
+                <FormField label="Color" style={styles.formColumn}>
+                  <TextInput style={styles.input} placeholder="Ej. Rosa" placeholderTextColor={theme.colors.textMuted} onChangeText={onChange} value={value} />
+                </FormField>
               )}
             />
           </View>
@@ -107,7 +129,7 @@ export const NewProductForm = ({ barcode, isSaving, onSave, onCancel, onOpenPick
               style={[styles.selectButton, watchDeptId === 'NEW' && { borderColor: theme.colors.primary, borderWidth: 1 }]} 
               onPress={() => onOpenPicker('department')}
             >
-              <Text style={{ color: watchDeptId ? '#000' : '#999' }}>
+              <Text style={[styles.selectButtonText, !watchDeptId && styles.selectButtonPlaceholder]}>
                 {watchDeptId === 'NEW' ? '+ Nuevo Departamento' : (watchDeptName || 'Seleccionar departamento...')}
               </Text>
             </TouchableOpacity>
@@ -118,8 +140,8 @@ export const NewProductForm = ({ barcode, isSaving, onSave, onCancel, onOpenPick
                 name="departmentName"
                 render={({ field: { onChange, value } }) => (
                   <TextInput 
-                    style={[styles.input, { marginTop: 5, borderColor: theme.colors.primary }]} 
-                    placeholder="Escribe el nombre del departamento *" 
+                    style={[styles.input, styles.newEntityInput]} 
+                    placeholder="Nombre del departamento *" placeholderTextColor={theme.colors.textMuted} 
                     onChangeText={onChange}
                     value={value}
                   />
@@ -135,7 +157,7 @@ export const NewProductForm = ({ barcode, isSaving, onSave, onCancel, onOpenPick
               onPress={() => onOpenPicker('category')}
               disabled={!watchDeptId}
             >
-              <Text style={{ color: watchCatId ? '#000' : (watchDeptId ? '#999' : '#ccc') }}>
+              <Text style={[styles.selectButtonText, !watchCatId && styles.selectButtonPlaceholder, !watchDeptId && styles.selectButtonDisabledText]}>
                 {watchCatId === 'NEW' ? '+ Nueva Categoría' : (watchCatName || 'Seleccionar categoría...')}
               </Text>
             </TouchableOpacity>
@@ -146,8 +168,8 @@ export const NewProductForm = ({ barcode, isSaving, onSave, onCancel, onOpenPick
                 name="categoryName"
                 render={({ field: { onChange, value } }) => (
                   <TextInput 
-                    style={[styles.input, { marginTop: 5, borderColor: theme.colors.primary }]} 
-                    placeholder="Escribe el nombre de la categoría *" 
+                    style={[styles.input, styles.newEntityInput]} 
+                    placeholder="Nombre de la categoría *" placeholderTextColor={theme.colors.textMuted} 
                     onChangeText={onChange}
                     value={value}
                   />

@@ -34,6 +34,12 @@
       "expo-secure-store",
       "expo-web-browser",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Permitir que Boutique Estefany use la cámara para escanear productos."
+        }
+      ],
+      [
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.849272336378-tuib75770io9ve58suvgp1uqnu4t178o"

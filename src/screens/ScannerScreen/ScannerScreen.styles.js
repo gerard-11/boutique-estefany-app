@@ -121,6 +121,14 @@ export const styles = StyleSheet.create({
     padding: theme.spacing.xl,
     backgroundColor: theme.colors.background,
   },
+  permissionTitle: {
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
+    textAlign: 'center',
+  },
   permissionText: {
     fontSize: theme.typography.fontSize.md,
     textAlign: 'center',
@@ -128,6 +136,8 @@ export const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   permissionButton: {
+    minWidth: 180,
+    alignItems: 'center',
     backgroundColor: theme.colors.primary,
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.md,
@@ -136,6 +146,16 @@ export const styles = StyleSheet.create({
   permissionButtonText: {
     color: theme.colors.white,
     fontWeight: theme.typography.fontWeight.bold,
+  },
+  permissionSecondaryButton: {
+    marginTop: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+  },
+  permissionSecondaryButtonText: {
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.bold,
+    textAlign: 'center',
   },
   resultsContainer: {
     padding: theme.spacing.xl,
@@ -195,6 +215,14 @@ export const styles = StyleSheet.create({
   form: {
     gap: theme.spacing.md,
   },
+  formRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+    alignItems: 'flex-start',
+  },
+  formColumn: {
+    flex: 1,
+  },
   inputGroup: {
     marginBottom: theme.spacing.sm,
   },
@@ -205,6 +233,7 @@ export const styles = StyleSheet.create({
     fontWeight: theme.typography.fontWeight.medium,
   },
   input: {
+    minHeight: 50,
     backgroundColor: theme.colors.white,
     padding: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
@@ -216,6 +245,18 @@ export const styles = StyleSheet.create({
   readOnlyInput: {
     backgroundColor: '#f0f0f0',
     color: theme.colors.textSecondary,
+  },
+  inputError: {
+    borderColor: theme.colors.danger,
+  },
+  errorText: {
+    marginTop: theme.spacing.xs,
+    color: theme.colors.danger,
+    fontSize: theme.typography.fontSize.xs,
+  },
+  newEntityInput: {
+    marginTop: theme.spacing.sm,
+    borderColor: theme.colors.primary,
   },
   selectButton: {
     flexDirection: 'row',
@@ -230,6 +271,12 @@ export const styles = StyleSheet.create({
   selectButtonText: {
     fontSize: theme.typography.fontSize.md,
     color: theme.colors.text,
+  },
+  selectButtonPlaceholder: {
+    color: theme.colors.textMuted,
+  },
+  selectButtonDisabledText: {
+    color: '#ced4da',
   },
   saveButton: {
     backgroundColor: theme.colors.primary,

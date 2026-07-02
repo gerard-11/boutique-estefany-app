@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { CameraView } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -71,6 +71,7 @@ export default function ScannerScreen({ navigation }) {
     closePicker, openPicker
   } = useScannerStore();
 
+  const [permission, requestPermission] = useCameraPermissions();
   const [isTorchOn, setTorchOn] = useState(false);
   const [scanFeedback, setScanFeedback] = useState('Centra el código completo dentro de la guía.');
   const pendingScanRef = useRef({ code: null, count: 0, updatedAt: 0 });
@@ -111,6 +112,17 @@ export default function ScannerScreen({ navigation }) {
     onTransactionSuccess: () => navigation.goBack(),
     onReturnSuccess: () => resetStore(),
   });
+
+  const handleCameraMountError = useCallback((event) => {
+    const message = event?.message || 'No se pudo iniciar la cámara.';
+    console.warn('Camera mount error:', message);
+    setScanFeedback(message);
+  }, []);
+
+  const handleCameraReady = useCallback(() => {
+    console.log('Camera ready');
+    setScanFeedback('Centra el código completo dentro de la guía.');
+  }, []);
 
   const handleStableBarcodeScanned = useCallback((result) => {
     if (scanned || step !== 'SCANNING') return;
@@ -221,6 +233,31 @@ export default function ScannerScreen({ navigation }) {
     }, [navigation, isDirty, barcode])
   );
 
+  if (!permission) {
+    return (
+      <SafeAreaView style={styles.permissionContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={styles.permissionText}>Preparando la cámara...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <SafeAreaView style={styles.permissionContainer}>
+        <MaterialCommunityIcons name="camera-off" size={42} color={theme.colors.primary} />
+        <Text style={styles.permissionTitle}>Permiso de cámara requerido</Text>
+        <Text style={styles.permissionText}>Activa la cámara para escanear códigos de producto.</Text>
+        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+          <Text style={styles.permissionButtonText}>Permitir cámara</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.permissionSecondaryButton} onPress={openManualProductForm}>
+          <Text style={styles.permissionSecondaryButtonText}>Crear producto sin escanear</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <FormProvider {...methods}>
       <SafeAreaView style={styles.container}>
@@ -234,6 +271,8 @@ export default function ScannerScreen({ navigation }) {
               zoom={0.12}
               enableTorch={isTorchOn}
               onBarcodeScanned={handleStableBarcodeScanned}
+              onCameraReady={handleCameraReady}
+              onMountError={handleCameraMountError}
               barcodeScannerSettings={{
                 barcodeTypes: BARCODE_TYPES,
               }}
